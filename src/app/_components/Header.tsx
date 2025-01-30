@@ -7,26 +7,46 @@ interface HeaderProps {
 
 export default function Header({ session }: HeaderProps) {
   return (
-    <header className="bg-gray-900 p-4">
-      <nav className="container mx-auto flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-white">
-          Your Logo
-        </Link>
-        <div className="space-x-4">
-          <Link href="/" className="text-white hover:text-gray-300">
-            Home
-          </Link>
-          {session?.user ? (
-            <Link href="/profile" className="text-white hover:text-gray-300">
-              Profile
+    <header className="fixed top-0 left-0 right-0 bg-gray-800 text-white shadow-lg">
+      <nav className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="text-xl font-bold hover:text-gray-300">
+              Home
             </Link>
-          ) : (
-            <Link href="/api/auth/signin" className="text-white hover:text-gray-300">
-              Sign In
+            <Link href="/dashboard" className="hover:text-gray-300">
+              Dashboard
             </Link>
-          )}
+          </div>
+
+          <div className="flex items-center space-x-4">
+            {session ? (
+              <>
+                <Link 
+                  href="/dashboard/profile"
+                  className="hover:text-gray-300"
+                >
+                  Profile
+                </Link>
+
+                <Link
+                  href="/api/auth/signout"
+                  className="rounded-lg bg-white/10 px-4 py-2 hover:bg-white/20"
+                >
+                  Sign Out
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/sign-in"
+                className="rounded-lg bg-white/10 px-4 py-2 hover:bg-white/20"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </nav>
     </header>
-  );
+  )
 }

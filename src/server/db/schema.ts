@@ -1,12 +1,12 @@
 import { relations, sql } from "drizzle-orm";
 import {
-  index,
-  integer,
-  pgTableCreator,
-  primaryKey,
-  text,
-  timestamp,
-  varchar,
+    index,
+    integer,
+    pgTableCreator,
+    primaryKey,
+    text,
+    timestamp,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -18,24 +18,54 @@ import { type AdapterAccount } from "next-auth/adapters";
  */
 export const createTable = pgTableCreator((name) => `video-transcriber_${name}`);
 
-export const posts = createTable(
-  "post",
+export const folders = createTable("folder", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: varchar("name", { length: 255 }),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+});
+
+export const foldersRelations = relations(folders, ({ many, one }) => ({
+  foldersToVideos: many(foldersToVideos),
+  user: one(users, { fields: [folders.userId], references: [users.id] }),
+}));
+
+export const videos = createTable("video", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  name: varchar("name", { length: 255 }).notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id),
+  originalVideoUrl: varchar("original_video_url", { length: 255 }).notNull(),
+  subtitlesUrl: varchar("subtitles_url", { length: 255 }),
+  processedVideoUrl: varchar("processed_video_url", { length: 255 }),
+  createdAt: timestamp("created_at", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
+  status: varchar("status", { length: 50 })
+    .notNull()
+    .default('pending'), // Could be 'pending', 'processing', 'completed', 'failed'
+});
+
+const videosRelations = relations(videos, ({ many, one }) => ({
+  foldersToVideos: many(foldersToVideos),
+  user: one(users, { fields: [videos.userId], references: [users.id] }),
+}));
+
+export const foldersToVideos = createTable(
+  "folders_to_videos",
   {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    name: varchar("name", { length: 256 }),
-    createdById: varchar("created_by", { length: 255 })
+    folderId: varchar("folder_id", { length: 255 })
       .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
-      () => new Date()
-    ),
+      .references(() => folders.id),
+    videoId: varchar("video_id", { length: 255 })
+      .notNull() 
+      .references(() => videos.id),
   },
-  (example) => ({
-    createdByIdIdx: index("created_by_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+  (table) => ({
+    pk: primaryKey({ columns: [table.folderId, table.videoId] }),
   })
 );
 
@@ -55,6 +85,7 @@ export const users = createTable("user", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
+  folders: many(folders),
 }));
 
 export const accounts = createTable(
