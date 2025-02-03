@@ -19,11 +19,21 @@ import { type AdapterAccount } from "next-auth/adapters";
 export const createTable = pgTableCreator((name) => `video-transcriber_${name}`);
 
 export const folders = createTable("folder", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  name: varchar("name", { length: 255 }),
+  id: integer("id")
+    .primaryKey()
+    .generatedByDefaultAsIdentity(),
+  title: varchar("title", { length: 255 }).notNull().unique(),
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
+  createdAt: timestamp("created_at", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
 });
 
 export const foldersRelations = relations(folders, ({ many, one }) => ({
@@ -33,7 +43,7 @@ export const foldersRelations = relations(folders, ({ many, one }) => ({
 
 export const videos = createTable("video", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-  name: varchar("name", { length: 255 }).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
@@ -44,12 +54,13 @@ export const videos = createTable("video", {
     mode: "date",
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
-  status: varchar("status", { length: 50 })
-    .notNull()
-    .default('pending'), // Could be 'pending', 'processing', 'completed', 'failed'
+  updatedAt: timestamp("updated_at", {
+    mode: "date",
+    withTimezone: true,
+  }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-const videosRelations = relations(videos, ({ many, one }) => ({
+export const videosRelations = relations(videos, ({ many, one }) => ({
   foldersToVideos: many(foldersToVideos),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
 }));
@@ -57,17 +68,22 @@ const videosRelations = relations(videos, ({ many, one }) => ({
 export const foldersToVideos = createTable(
   "folders_to_videos",
   {
-    folderId: varchar("folder_id", { length: 255 })
+    folderId: integer("folder_id")
       .notNull()
       .references(() => folders.id),
-    videoId: varchar("video_id", { length: 255 })
-      .notNull() 
+    videoId: integer("video_id")
+      .notNull()
       .references(() => videos.id),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.folderId, table.videoId] }),
   })
 );
+
+export const foldersToVideosRelations = relations(foldersToVideos, ({ one }) => ({
+  folder: one(folders, { fields: [foldersToVideos.folderId], references: [folders.id] }),
+  video: one(videos, { fields: [foldersToVideos.videoId], references: [videos.id] }),
+}));
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })
@@ -81,7 +97,8 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
-});
+  },
+);
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),

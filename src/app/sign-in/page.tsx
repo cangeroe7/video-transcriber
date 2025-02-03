@@ -1,19 +1,13 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
-export default function signinpage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.replace("/dashboard");
-    }
-  }, [status, router]);
+import { auth } from "~/server/auth";
+import { redirect } from "next/navigation";
+export default async function signinpage() {
+  const session = await auth();
+  if (session?.user) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
@@ -22,7 +16,7 @@ export default function signinpage() {
         
         <div className="space-y-4">
           <button
-            onClick={() => signIn("github", { callbackUrl: "/" })}
+            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="flex w-full justify-center items-center gap-2 rounded-lg bg-black px-4 py-2 text-white hover:bg-gray-800"
           >
             <svg className="h-5 w-5" fill="currentcolor" viewBox="0 0 24 24">
@@ -32,7 +26,7 @@ export default function signinpage() {
           </button>
           
           <button
-            onClick={() => signIn("google", { callbackUrl: "/" })}
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="flex w-full justify-center items-center gap-2 rounded-lg bg-white px-4 py-2 text-gray-600 shadow-md hover:bg-gray-50 border border-gray-200"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">

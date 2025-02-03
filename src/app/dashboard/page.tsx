@@ -1,9 +1,10 @@
 import { auth } from "~/server/auth";
+import { redirect } from "next/navigation";
 
 export default async function Dashboard() {
   const session = await auth();
   if (!session?.user) {
-    return <div>Sign in to see your dashboard</div>;
+    redirect("/sign-in");
   }
   return <div>Dashboard</div>;
 }
