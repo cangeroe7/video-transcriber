@@ -45,7 +45,7 @@ export const videoRouter = createTRPCRouter({
       return videos.length > 0 ? videos : null;
     }),
 
-  getUserVideosPage: protectedProcedure
+  getUserVideos: protectedProcedure
     .input(
       z.object({ 
         limit: z.number().min(1).max(100).default(10),

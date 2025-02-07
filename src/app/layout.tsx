@@ -19,11 +19,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <SessionProvider>
-          <TRPCReactProvider>
-            {children}
-          </TRPCReactProvider>
-        </SessionProvider>
+          <SessionProvider>
+            <TRPCReactProvider>
+              {children}
+            </TRPCReactProvider>
+          </SessionProvider>
       </body>
     </html>
   );

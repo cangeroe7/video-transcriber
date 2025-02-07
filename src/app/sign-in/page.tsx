@@ -1,14 +1,8 @@
-"use client";
+"use client"
 
 import { signIn } from "next-auth/react";
-import { auth } from "~/server/auth";
-import { redirect } from "next/navigation";
-export default async function signinpage() {
-  const session = await auth();
-  if (session?.user) {
-    redirect("/dashboard");
-  }
 
+export default function signinpage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="w-full max-w-md space-y-8">

@@ -9,9 +9,6 @@ export default async function RootLayout({
 
   return (
     <>
-      <div>
-        Dashboard
-      </div>
       {children}
     </>
   );
