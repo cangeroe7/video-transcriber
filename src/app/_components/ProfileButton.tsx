@@ -7,7 +7,7 @@ import { User } from "next-auth";
 import { signOut } from "next-auth/react";
 interface ProfileButtonProps {
   user?: User;
-  image: string;
+  image: string | null;
 }
 
 export default function ProfileButton({ user, image }: ProfileButtonProps) {
@@ -34,13 +34,19 @@ export default function ProfileButton({ user, image }: ProfileButtonProps) {
         className="flex items-center focus:outline-none"
         onMouseDown={() => setIsOpen((prev) => !prev)}
       >
-        <Image
-          src={image ?? "/favicon.ico"}
-          alt="Profile"
-          width={32}
-          height={32}
-          className="rounded-full"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt="Profile"
+            width={32}
+            height={32}
+            className="rounded-full"
+          />
+        ) : (
+          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-4.41 0-8 2.69-8 6v2h16v-2c0-3.31-3.59-6-8-6z" />
+          </svg>
+        )}
       </button>
 
       {isOpen && (
@@ -53,7 +59,7 @@ export default function ProfileButton({ user, image }: ProfileButtonProps) {
           <hr className="my-1" />
           
           <Link
-            href="/profile"
+            href="/dashboard/profile"
             className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,22 +1,21 @@
+"use client"
 
-import { auth } from "~/server/auth";
 import { HydrateClient } from "~/trpc/server";
 import { signOut } from "next-auth/react";
 
-export default async function Profile() {
-  const session = await auth();
-  if (!session?.user) {
-    return <div>Sign in to see your profile</div>;
-  }
+export default function Profile() {
   return (
-    <HydrateClient>
+    <>
       <div>Profile</div>
 
       <div className="flex justify-center mt-4">
-        <button onClick={() => signOut()}>Sign Out</button>
+        <button
+          onClick={() => signOut()}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Sign Out
+        </button>
       </div>
-
-
-    </HydrateClient>
+    </>
   );
 }

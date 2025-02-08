@@ -1,7 +1,3 @@
-import { auth } from "~/server/auth";
-
-import Header from "~/app/_components/Header";
-import Footer from "~/app/_components/Footer";
 
 export default async function RootLayout({
   children,
@@ -9,6 +5,9 @@ export default async function RootLayout({
 
   return (
     <>
+      <div>
+        Dashboard
+      </div>
       {children}
     </>
   );

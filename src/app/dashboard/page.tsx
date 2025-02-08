@@ -1,6 +1,5 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
-import { VideoItem } from "~/app/dashboard/f/[folderId]/VideoItem"; // Importing VideoItem
 
 export default async function Dashboard() {
   const session = await auth();
