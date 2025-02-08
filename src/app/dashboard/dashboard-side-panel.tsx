@@ -4,8 +4,8 @@ import { Video, Image, Settings } from "lucide-react"
 
 export function DashboardSidePanel() {
   return (
-    <aside className="fixed left-0 top-16 w-64 h-[calc(100vh-4rem)] bg-gray-100 border-r overflow-y-auto">
-      <nav className="p-4">
+    <aside className="fixed left-0 top-16 w-48 h-[calc(100vh-4rem)] bg-gray-100 border-r overflow-y-auto">
+      <nav className="p-4 flex justify-center h-full">
         <ul className="space-y-2">
           <li>
             <Link href="/dashboard" className="flex items-center p-2 rounded-lg hover:bg-gray-200">

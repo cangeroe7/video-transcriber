@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { User } from "next-auth";
 import { signOut } from "next-auth/react";
+import { redirect } from "next/navigation";
 interface ProfileButtonProps {
   user?: User;
   image: string | null;
@@ -73,6 +74,7 @@ export default function ProfileButton({ user, image }: ProfileButtonProps) {
           <button
             onClick={() => {
               signOut();
+              redirect("/")
             }}
             className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
           >

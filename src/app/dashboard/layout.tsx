@@ -2,7 +2,6 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { DashboardSidePanel } from "./dashboard-side-panel";
 import { DashboardHeader } from "./dashboard-header";
-import { SidebarProvider } from "../_components/ui/sidebar";
 
 export default async function RootLayout({
   children,
@@ -14,12 +13,10 @@ export default async function RootLayout({
 
   return (
     <>
-      <DashboardHeader/>
-      <div className="flex">
-        <SidebarProvider>
-          <DashboardSidePanel />
-        </SidebarProvider>
-        <main>
+      <div className="grid">
+        <DashboardHeader/>
+        <DashboardSidePanel />
+        <main className="ml-48 mt-16">
           {children}
         </main>
       </div>
