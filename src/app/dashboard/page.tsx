@@ -1,7 +1,8 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import VideoLayout from "./[folderId]/VideoLayout";
+import VideoLayout from "~/app/_components/VideoLayout";
+import { VideoUpload } from "~/app/_components/VideoUpload";
 
 // TODO:
 // * Add a newProject button, to upload new video.
@@ -22,9 +23,17 @@ export default async function FolderPage() {
     orderBy: { field: "updatedAt", direction: "desc" },
   });
 
+  const userFolders = await api.folder.getUserFolders();
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className=" text-2xl font-bold mb-4">My Videos</h1>
+      <div className="flex align-center mb-4">
+        <h1 className="text-2xl font-bold">My Videos</h1>
+        <div className="ml-auto">
+          <VideoUpload folders={userFolders} />
+        </div>
+      </div>
+
       <VideoLayout videos={videoItems} />
     </div>
   );

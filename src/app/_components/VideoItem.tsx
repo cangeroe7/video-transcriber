@@ -7,10 +7,6 @@ import { Button } from "~/app/_components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/app/_components/ui/dropdown-menu"
 import { videos } from "~/server/db/schema"
 
-type VideoItemProps = {
-  video: (typeof videos.$inferSelect);
-}
-
 export function VideoItem({ video }: { video: typeof videos.$inferSelect }) {
   const [title, setTitle] = useState(video.title)
 
@@ -31,7 +27,7 @@ export function VideoItem({ video }: { video: typeof videos.$inferSelect }) {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
-      <div className="relative">
+      <div className="flex">
         <Image
           src={video.originalVideoUrl || "/placeholder.svg"}
           alt={title}
