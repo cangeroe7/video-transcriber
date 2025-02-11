@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { LayoutDashboard } from "lucide-react"
-import ProfileButton from "../_components/ProfileButton"
+import NewProfileButton from "~/app/_components/ProfileButton"
 import { auth } from "~/server/auth"
 
 export async function DashboardHeader() {
@@ -12,7 +12,8 @@ export async function DashboardHeader() {
         <LayoutDashboard className="h-6 w-6" />
         <span className="text-xl font-semibold">Dashboard</span>
       </Link>
-      <ProfileButton user={session?.user} image={session?.user.image ?? "/favicon.ico"} />
+      <NewProfileButton user={session?.user} image={session?.user.image ?? "/favicon.ico"} />
+      {/* <ProfileButton user={session?.user} image={session?.user.image ?? "/favicon.ico"} /> */}
     </header>
   )
 }

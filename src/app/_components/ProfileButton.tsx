@@ -1,90 +1,81 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import { User } from "next-auth";
+import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
+import { UserCircle, User, LogOut } from "lucide-react"
+import { User as NextAuthUser } from "next-auth";
+import { Button } from "~/app/_components/ui/button"
+import { Card } from "~/app/_components/ui/card"
+import { Separator } from "~/app/_components/ui/separator"
 import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
+
+
 interface ProfileButtonProps {
-  user?: User;
+  user?: NextAuthUser;
   image: string | null;
 }
 
-export default function ProfileButton({ user, image }: ProfileButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
+export default function NewProfileButton({ user, image }: ProfileButtonProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(event.target as Node) && isOpen) {
-        setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    
+    document.addEventListener("mousedown", handleClickOutside)
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
 
   return (
-    <div className="relative">
-      <button
-        className="flex items-center focus:outline-none"
-        onMouseDown={() => setIsOpen((prev) => !prev)}
-      >
+    <div className="relative" ref={dropdownRef}>
+      <Button onClick={() => setIsOpen(!isOpen)} className="rounded-full p-0 w-10 h-10 overflow-hidden">
         {image ? (
-          <Image
-            src={image}
-            alt="Profile"
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
+          <Image src={image || "/placeholder.svg"} alt="Profile" width={40} height={40} className="rounded-full" />
         ) : (
-          <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-4.41 0-8 2.69-8 6v2h16v-2c0-3.31-3.59-6-8-6z" />
-          </svg>
+          <UserCircle className="w-full h-full" />
         )}
-      </button>
-
+      </Button>
       {isOpen && (
-        <div ref={popupRef} className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
-          <div className="px-4 py-2">
-            <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-            <p className="text-sm text-gray-500">{user?.email}</p>
+        <Card className="absolute right-0 mt-2 w-64 z-10 shadow-lg border">
+          <div className="p-4">
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="ml-3 flex-grow min-w-0">
+                <h3 className="font-semibold text-sm truncate">{user?.name}</h3>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              </div>
+            </div>
+            <Separator className="my-2" />
+            <Button variant="ghost" className="w-full justify-start text-sm font-normal" onClick={() => {
+              setIsOpen(false);
+              redirect("/dashboard/profile");
+              }
+            }>
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Button>
+            <Separator className="my-2" />
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sm font-normal text-red-600 hover:text-red-700 hover:bg-red-50"
+              onClick={() => {
+                signOut();
+                redirect("/");
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign out
+            </Button>
           </div>
-          
-          <hr className="my-1" />
-          
-          <Link
-            href="/dashboard/profile"
-            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Profile
-          </Link>
-          
-          <hr className="my-1" />
-          
-          <button
-            onClick={() => {
-              signOut();
-              redirect("/")
-            }}
-            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign out
-          </button>
-        </div>
+        </Card>
       )}
     </div>
-  );
+  )
 }
+

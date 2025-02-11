@@ -20,20 +20,17 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
 
   const handleButtonClick = () => {
     setIsModalOpen(true)
+    document.body.classList.add("overflow-hidden")
   }
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
     resetForm()
+    document.body.classList.remove("overflow-hidden")
   }
 
   const resetForm = () => {
     setVideoPreview(null)
-    setVideoTitle("")
-    setSelectedFolder("")
-    setNewFolder("")
-    setFileName("")
-    setSelectedFile(null)
     if (fileInputRef.current) {
       fileInputRef.current.value = ""
     }
@@ -106,11 +103,11 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
     <div>
       <Button onClick={handleButtonClick}>Upload Video</Button>
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-opacity duration-300">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center transition-opacity duration-300 z-50">
           <div className="bg-white p-8 rounded-lg w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">Upload Video</h2>
-              <Button variant="ghost" size="icon" onClick={handleCloseModal}>
+              <Button variant="default" size="icon" onClick={handleCloseModal}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -128,19 +125,20 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
                       alt="Video preview"
                       className="mx-auto max-h-40 object-contain"
                     />
-                    <p className="text-sm text-gray-600">{fileName}</p>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleRemoveVideo()
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-center">
+                      <p className="text-sm text-gray-600">{fileName}</p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleRemoveVideo()
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <p>Drag and drop a video here, or click to select</p>
