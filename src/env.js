@@ -15,6 +15,7 @@ export const env = createEnv({
     AUTH_GITHUB_SECRET: z.string(),
     AUTH_GOOGLE_ID: z.string(),
     AUTH_GOOGLE_SECRET: z.string(),
+
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -33,6 +34,11 @@ export const env = createEnv({
     POSTGRES_DATABASE: z.string(),
     POSTGRES_URL_NO_SSL: z.string().url(),
     POSTGRES_PRISMA_URL: z.string().url(),
+
+    AWS_BUCKET_NAME: z.string(),
+    AWS_BUCKET_REGION: z.string(),
+    AWS_ACCESS_KEY: z.string(),
+    AWS_SECRET_ACCESS_KEY: z.string(),
   },
 
   /**
@@ -70,6 +76,10 @@ export const env = createEnv({
     POSTGRES_DATABASE: process.env.POSTGRES_DATABASE,
     POSTGRES_URL_NO_SSL: process.env.POSTGRES_URL_NO_SSL,
     POSTGRES_PRISMA_URL: process.env.POSTGRES_PRISMA_URL,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+    AWS_BUCKET_REGION: process.env.AWS_BUCKET_REGION,
+    AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
     index,
     integer,
+    pgEnum,
     pgTableCreator,
     primaryKey,
     text,
@@ -84,6 +85,25 @@ export const foldersToVideosRelations = relations(foldersToVideos, ({ one }) => 
   folder: one(folders, { fields: [foldersToVideos.folderId], references: [folders.id] }),
   video: one(videos, { fields: [foldersToVideos.videoId], references: [videos.id] }),
 }));
+
+export const mediaType = pgEnum("media_type", ["original_video", "text", "sub_video"])
+
+export const media = createTable(
+  "media",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    type: mediaType("type").notNull(),
+    url: varchar("url").notNull(),
+    userId: varchar("user_id", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    videoId: integer("video_id")
+      .references(() => videos.id),
+    createdAt: timestamp("created_at", { withTimezone: true}).default(sql`CURRENT_TIMESTAMP`)
+  }
+)
+
+// REQUIRED TABLES FOR NEXT AUTH
 
 export const users = createTable("user", {
   id: varchar("id", { length: 255 })

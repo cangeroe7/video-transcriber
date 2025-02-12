@@ -7,6 +7,7 @@ import { Label } from "~/app/_components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
 import { X } from "lucide-react"
 import {folders} from "~/server/db/schema"
+import { getSignedURL } from "./actions"
 
 export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -16,7 +17,17 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
   const [newFolder, setNewFolder] = useState("")
   const [fileName, setFileName] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [statusMessage, setStatusMessage] = useState("Upload")
+  const [loading, setLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const computeSHA256 = async (file: File) => {
+    const buffer = await file.arrayBuffer()
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+    return hashHex
+  }
 
   const handleButtonClick = () => {
     setIsModalOpen(true)
@@ -24,6 +35,8 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
   }
 
   const handleCloseModal = () => {
+    setStatusMessage("Upload")
+    setLoading(false)
     setIsModalOpen(false)
     resetForm()
     document.body.classList.remove("overflow-hidden")
@@ -77,26 +90,58 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
     resetForm()
   }
 
+
+
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    setStatusMessage("Uploading...")
+    setLoading(true)
+
     if (!selectedFile) {
       alert("Please select a video file")
+      setStatusMessage("Upload")
+      setLoading(false)
       return
     }
 
-    // Here you would typically send the data to your server
-    // For demonstration, we'll just log the data
-    console.log({
-      file: selectedFile,
-      title: videoTitle,
-      folder: selectedFolder === "new" ? newFolder : selectedFolder,
-    })
+    try {
+      const checksum = await computeSHA256(selectedFile)
 
-    // Simulating an API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+      const signedURLResult = await getSignedURL(selectedFile.type, selectedFile.size, checksum)
 
-    alert("Video uploaded successfully!")
-    handleCloseModal()
+      if (signedURLResult.failure !== undefined) {
+        setStatusMessage("Failed")
+        throw(new Error(signedURLResult.failure))
+        return
+      }
+
+      const url = signedURLResult.success.url
+
+      console.log({
+        file: selectedFile,
+        title: videoTitle,
+        folder: selectedFolder === "new" ? newFolder : selectedFolder,
+      })
+
+      await fetch(url, {
+        method: "PUT",
+        body: selectedFile,
+        headers: {
+          "Content-Type": selectedFile.type
+        }
+      })
+    } catch (e) {
+      setStatusMessage("Failed")
+      console.log(e)
+
+    } finally {
+      setLoading(false)
+    }
+
+    setStatusMessage("Created")
+    setLoading(false)
   }
 
   return (
@@ -188,8 +233,8 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
                     />
                   </div>
                 )}
-                <Button type="submit" className="w-full">
-                  Upload
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {statusMessage}
                 </Button>
               </div>
             </form>

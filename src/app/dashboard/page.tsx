@@ -2,7 +2,7 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
 import VideoLayout from "~/app/_components/VideoLayout";
-import { VideoUpload } from "~/app/_components/VideoUpload";
+import { VideoUpload } from "~/app/dashboard/VideoUpload";
 
 // TODO:
 // * Add a newProject button, to upload new video.
