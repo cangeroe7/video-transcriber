@@ -1,13 +1,22 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import VideoLayout from "../../_components/VideoLayout";
+import VideoLayout from "~/app/_components/VideoLayout";
 
-export default async function FolderPage() {
+
+interface FolderPageProps {
+  params: { folderId: string };
+}
+
+export default async function FolderPage({ params }: FolderPageProps) {
+  const { folderId } = await params;
+
   const session = await auth();
   if (!session?.user) {
     redirect("/");
   }
+
+  console.log(folderId);
 
   const { items: videoItems } = await api.video.getUserVideos({
     limit: 10,
