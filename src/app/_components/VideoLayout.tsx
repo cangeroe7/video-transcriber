@@ -10,16 +10,6 @@ export default function VideoLayout(props: {
         {props.videos.map((video) => (
           <>
           <VideoItem key={video.id} video={video} />
-          <VideoItem key={video.id + 1} video={video} />
-          <VideoItem key={video.id + 2} video={video} />
-          <VideoItem key={video.id + 3} video={video} />
-          <VideoItem key={video.id + 4} video={video} />
-          <VideoItem key={video.id + 5} video={video} />
-          <VideoItem key={video.id + 6} video={video} />
-          <VideoItem key={video.id + 7} video={video} />
-          <VideoItem key={video.id + 8} video={video} />
-          <VideoItem key={video.id + 9} video={video} />
-          <VideoItem key={video.id + 10} video={video} />
           </>
         ))}
       </div>

@@ -6,8 +6,16 @@ import { Input } from "~/app/_components/ui/input"
 import { Label } from "~/app/_components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
 import { X } from "lucide-react"
-import {folders} from "~/server/db/schema"
-import { getSignedURL } from "./actions"
+import { folders } from "~/server/db/schema"
+import { createVideoProject, getSignedURL } from "./actions"
+
+const computeSHA256 = async (file: File) => {
+  const buffer = await file.arrayBuffer()
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  return hashHex
+}
 
 export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -20,14 +28,6 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
   const [statusMessage, setStatusMessage] = useState("Upload")
   const [loading, setLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const computeSHA256 = async (file: File) => {
-    const buffer = await file.arrayBuffer()
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-    return hashHex
-  }
 
   const handleButtonClick = () => {
     setIsModalOpen(true)
@@ -90,58 +90,48 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
     resetForm()
   }
 
+  const handleFileUpload = async (file: File) => {
 
+    const signedURLResult = await getSignedURL(file.type, file.size, await computeSHA256(file))
 
+    if (signedURLResult.failure !== undefined) {
+      throw new Error(signedURLResult.failure)
+    }
+
+    const { url, id: fileId } = signedURLResult.success
+    await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type
+      },
+      body: file,
+    })
+
+    return fileId
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    setStatusMessage("Uploading...")
     setLoading(true)
-
-    if (!selectedFile) {
-      alert("Please select a video file")
-      setStatusMessage("Upload")
-      setLoading(false)
-      return
-    }
-
     try {
-      const checksum = await computeSHA256(selectedFile)
-
-      const signedURLResult = await getSignedURL(selectedFile.type, selectedFile.size, checksum)
-
-      if (signedURLResult.failure !== undefined) {
-        setStatusMessage("Failed")
-        throw(new Error(signedURLResult.failure))
-        return
+      let fileId: number | undefined = undefined
+      if (selectedFile) {
+        setStatusMessage("Uploading...")
+        fileId = await handleFileUpload(selectedFile)
       }
 
-      const url = signedURLResult.success.url
+      setStatusMessage("Creating project...")
 
-      console.log({
-        file: selectedFile,
-        title: videoTitle,
-        folder: selectedFolder === "new" ? newFolder : selectedFolder,
-      })
+      createVideoProject(videoTitle, fileId)
 
-      await fetch(url, {
-        method: "PUT",
-        body: selectedFile,
-        headers: {
-          "Content-Type": selectedFile.type
-        }
-      })
-    } catch (e) {
-      setStatusMessage("Failed")
+      setStatusMessage("Project succesful")
+    } catch(e) {
       console.log(e)
-
+      setStatusMessage("Post failed")
     } finally {
       setLoading(false)
     }
-
-    setStatusMessage("Created")
-    setLoading(false)
   }
 
   return (
@@ -192,7 +182,7 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
                   type="file"
                   ref={fileInputRef}
                   onChange={handleFileInputChange}
-                  accept="video/*"
+                  accept="video/mp4"
                   className="hidden"
                 />
               </div>

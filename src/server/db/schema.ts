@@ -48,7 +48,8 @@ export const videos = createTable("video", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
-  originalVideoUrl: varchar("original_video_url", { length: 255 }).notNull(),
+  originalVideoMediaId: integer("original_video_media_id")
+    .references(() => media.id),
   subtitlesUrl: varchar("subtitles_url", { length: 255 }),
   processedVideoUrl: varchar("processed_video_url", { length: 255 }),
   createdAt: timestamp("created_at", {
@@ -63,6 +64,7 @@ export const videos = createTable("video", {
 
 export const videosRelations = relations(videos, ({ many, one }) => ({
   foldersToVideos: many(foldersToVideos),
+  media: one(media, { fields: [videos.originalVideoMediaId], references: [media.id]}),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
 }));
 
@@ -86,7 +88,7 @@ export const foldersToVideosRelations = relations(foldersToVideos, ({ one }) => 
   video: one(videos, { fields: [foldersToVideos.videoId], references: [videos.id] }),
 }));
 
-export const mediaType = pgEnum("media_type", ["original_video", "text", "sub_video"])
+export const mediaType = pgEnum("media_type", ["original_video", "json", "processed_video"])
 
 export const media = createTable(
   "media",
@@ -97,8 +99,6 @@ export const media = createTable(
     userId: varchar("user_id", { length: 255 })
       .notNull()
       .references(() => users.id),
-    videoId: integer("video_id")
-      .references(() => videos.id),
     createdAt: timestamp("created_at", { withTimezone: true}).default(sql`CURRENT_TIMESTAMP`)
   }
 )

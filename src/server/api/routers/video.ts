@@ -6,10 +6,10 @@ import { eq, count } from "drizzle-orm";
 export const videoRouter = createTRPCRouter({
 
   createVideo: protectedProcedure
-    .input(z.object({ title: z.string().min(1), originalVideoUrl: z.string().url()}))
+    .input(z.object({ title: z.string().min(1), originalVideoMediaId: z.number().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const { title, originalVideoUrl } = input;
-      await ctx.db.insert(videos).values({ title, originalVideoUrl, userId: ctx.session.user.id });
+      const { title, originalVideoMediaId } = input;
+      await ctx.db.insert(videos).values({ title, originalVideoMediaId, userId: ctx.session.user.id });
     }),
 
   deleteVideo: protectedProcedure

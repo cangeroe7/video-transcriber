@@ -29,7 +29,7 @@ export function VideoItem({ video }: { video: typeof videos.$inferSelect }) {
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="flex">
         <Image
-          src={video.originalVideoUrl || "/placeholder.svg"}
+          src={"/placeholder.svg"}//src={video.originalVideoMediaId?.toString() || "/placeholder.svg"}
           alt={title}
           width={200}
           height={120}
