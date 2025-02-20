@@ -5,7 +5,7 @@ import Image from "next/image"
 import { MoreVertical, Edit2, Trash2 } from "lucide-react"
 import { Button } from "~/app/_components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/app/_components/ui/dropdown-menu"
-import { videos } from "~/server/db/schema"
+import type { videos } from "~/server/db/schema"
 
 export function VideoItem({ video }: { video: typeof videos.$inferSelect }) {
   const [title, setTitle] = useState(video.title)
@@ -29,7 +29,7 @@ export function VideoItem({ video }: { video: typeof videos.$inferSelect }) {
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="flex">
         <Image
-          src={"/placeholder.svg"}//src={video.originalVideoMediaId?.toString() || "/placeholder.svg"}
+          src={"/placeholder.svg"}//src={video.originalVideoMediaId?.toString() || "/placeholder.svg"} // Take a thumbnail, linked to a media entry
           alt={title}
           width={200}
           height={120}

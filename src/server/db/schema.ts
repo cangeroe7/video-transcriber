@@ -2,7 +2,6 @@ import { relations, sql } from "drizzle-orm";
 import {
     index,
     integer,
-    pgEnum,
     pgTableCreator,
     primaryKey,
     text,
@@ -42,13 +41,16 @@ export const foldersRelations = relations(folders, ({ many, one }) => ({
   user: one(users, { fields: [folders.userId], references: [users.id] }),
 }));
 
-export const videos = createTable("video", {
+export const videos = createTable("videos", {
   id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
   title: varchar("title", { length: 255 }).notNull(),
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
-  originalVideoMediaId: integer("original_video_media_id")
+  originalMediaVideoId: integer("original_video_media_id")
+    .references(() => media.id)
+    .notNull(),
+  thumbnailMediaId: integer("thumbnail_media_id")
     .references(() => media.id),
   subtitlesUrl: varchar("subtitles_url", { length: 255 }),
   processedVideoUrl: varchar("processed_video_url", { length: 255 }),
@@ -64,7 +66,7 @@ export const videos = createTable("video", {
 
 export const videosRelations = relations(videos, ({ many, one }) => ({
   foldersToVideos: many(foldersToVideos),
-  media: one(media, { fields: [videos.originalVideoMediaId], references: [media.id]}),
+  media: one(media, { fields: [videos.originalMediaVideoId], references: [media.id]}),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
 }));
 
@@ -88,13 +90,10 @@ export const foldersToVideosRelations = relations(foldersToVideos, ({ one }) => 
   video: one(videos, { fields: [foldersToVideos.videoId], references: [videos.id] }),
 }));
 
-export const mediaType = pgEnum("media_type", ["original_video", "json", "processed_video"])
-
 export const media = createTable(
   "media",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    type: mediaType("type").notNull(),
     url: varchar("url").notNull(),
     userId: varchar("user_id", { length: 255 })
       .notNull()
@@ -102,6 +101,12 @@ export const media = createTable(
     createdAt: timestamp("created_at", { withTimezone: true}).default(sql`CURRENT_TIMESTAMP`)
   }
 )
+
+export const mediaRelations = relations(media, ({ one }) => ({
+  user: one(users, { fields: [media.userId], references: [users.id] }),
+  videoWithOriginalMedia: one(videos, { fields: [media.id], references: [videos.originalMediaVideoId] }),
+  videoWithThumbnailMedia: one(videos, { fields: [media.id], references: [videos.thumbnailMediaId] }),
+}));
 
 // REQUIRED TABLES FOR NEXT AUTH
 
@@ -121,6 +126,7 @@ export const users = createTable("user", {
 );
 
 export const usersRelations = relations(users, ({ many }) => ({
+  media: many(media),
   accounts: many(accounts),
   folders: many(folders),
 }));

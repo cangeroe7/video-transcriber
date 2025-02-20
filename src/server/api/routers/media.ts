@@ -8,15 +8,14 @@ import { env } from "~/env";
 import crypto from "crypto"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-type SignedURLResponse = Promise<
+type SignedURLResponse = 
   | { failure?: undefined; success: { url: string; id: number } }
   | { failure: string; success?: undefined }
->;
 
 const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex")
 
 const maxFileSize = 1024 * 1024 * 20; // 20 MB
-const acceptedTypes = ["video/mp4"];
+const acceptedTypes = ["video/mp4", "video/mov", "image/jpg", "image/jpeg", "image/png"];
 
 const s3Client = new S3Client({
   region: env.AWS_BUCKET_REGION,
@@ -29,13 +28,11 @@ const s3Client = new S3Client({
 export const mediaRouter = createTRPCRouter({
   createMedia: protectedProcedure
     .input(z.object({
-      type: z.enum(["original_video", "json", "processed_video"]),
       url: z.string().url(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { type, url } = input;
+      const { url } = input;
       await ctx.db.insert(media).values({
-        type,
         url,
         userId: ctx.session.user.id,
       }).returning();
@@ -95,7 +92,6 @@ export const mediaRouter = createTRPCRouter({
       )
 
       const mediaResult = await ctx.db.insert(media).values({
-        type: "original_video",
         url: signedURL.split("?")[0]!,
         userId,
       }).returning();

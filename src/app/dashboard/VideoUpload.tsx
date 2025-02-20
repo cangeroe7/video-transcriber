@@ -6,8 +6,9 @@ import { Input } from "~/app/_components/ui/input"
 import { Label } from "~/app/_components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
 import { X } from "lucide-react"
-import { folders } from "~/server/db/schema"
-import { createVideoProject, getSignedURL } from "./actions"
+import type { folders } from "~/server/db/schema"
+import { api } from "~/trpc/react"
+import Image from 'next/image'
 
 const computeSHA256 = async (file: File) => {
   const buffer = await file.arrayBuffer()
@@ -20,6 +21,7 @@ const computeSHA256 = async (file: File) => {
 export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]}) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [videoPreview, setVideoPreview] = useState<string | null>(null)
+  const [thumbnail, setThumbnail] = useState<File | null>(null)
   const [videoTitle, setVideoTitle] = useState("")
   const [selectedFolder, setSelectedFolder] = useState("")
   const [newFolder, setNewFolder] = useState("")
@@ -28,11 +30,15 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
   const [statusMessage, setStatusMessage] = useState("Upload")
   const [loading, setLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploadState, setUploadState] = useState<{state: "FAILURE", failure: string } | {state: "IDLE"} | {state: "FETCHING"} | {state: "UPLOADED", data: {url: string, id: number}} | {state: "SUCCESS"}>({ state: "IDLE" })
 
   const handleButtonClick = () => {
     setIsModalOpen(true)
     document.body.classList.add("overflow-hidden")
   }
+
+  const createVideoMutation =  api.video.createVideo.useMutation()
+  const getSignedURLMutation = api.media.getSignedURL.useMutation()
 
   const handleCloseModal = () => {
     setStatusMessage("Upload")
@@ -76,11 +82,23 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
     video.onloadeddata = () => {
       video.currentTime = 1 // Set to 1 second to avoid potential blank frames at the start
       video.onseeked = () => {
-        const canvas = document.createElement("canvas")
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height)
-        setVideoPreview(canvas.toDataURL())
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const context = canvas.getContext("2d");
+        if (context) {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const blobUrl = URL.createObjectURL(blob);
+              setVideoPreview(blobUrl);
+
+              const file = new File([blob], fileName, { type: 'image/jpeg' });
+              setThumbnail(file);
+              console.log("Hello World");
+            }
+          }, 'image/png');
+        }
       }
     }
     video.src = URL.createObjectURL(file)
@@ -90,47 +108,80 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
     resetForm()
   }
 
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (file: File): Promise<{ url: string; id: number } | undefined> => {
 
-    const signedURLResult = await getSignedURL(file.type, file.size, await computeSHA256(file))
+    const checksum = await computeSHA256(file)
 
-    if (signedURLResult.failure !== undefined) {
-      throw new Error(signedURLResult.failure)
+    let signedURLResult: Awaited<ReturnType<typeof getSignedURLMutation.mutateAsync>> | null = null
+    try {
+      signedURLResult = await getSignedURLMutation.mutateAsync({
+        fileType: file.type,
+        fileSize: file.size,
+        checksum,
+      })
+    } catch(error) {
+      setUploadState({state: "FAILURE", failure: "Upload Error"})
+      console.error(error, uploadState)
+      return;
     }
 
-    const { url, id: fileId } = signedURLResult.success
-    await fetch(url, {
-      method: "PUT",
-      headers: {
-        "Content-Type": file.type
-      },
-      body: file,
-    })
+    if (signedURLResult.failure !== undefined) {
+      setUploadState({state: "FAILURE", failure: signedURLResult.failure})
+      console.error(uploadState, signedURLResult.failure)
+      return 
+    } 
 
-    return fileId
+    const { url } = signedURLResult.success
+
+    try {
+      await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": file.type
+        },
+        body: file,
+      })
+    } catch(error) {
+      console.error(error);
+      setUploadState({state: "FAILURE", failure: "Upload Error"});
+      return;
+    }
+
+    setUploadState({state: "UPLOADED", data: signedURLResult.success});
+    return signedURLResult.success;
   }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    setLoading(true)
+    setLoading(true);
+
+    setUploadState({ state: "FETCHING" });
+
+    const uploadResults = await Promise.all([
+      selectedFile ? handleFileUpload(selectedFile) : Promise.resolve(null),
+      thumbnail ? handleFileUpload(thumbnail) : Promise.resolve(null),
+    ]);
+
+    const [ videoUpload,thumbnailUpload] = uploadResults;
+
+    if (!videoUpload) {
+      setUploadState({ state: "FAILURE", failure: "Video upload failed" });
+      return;
+    }
+
     try {
-      let fileId: number | undefined = undefined
-      if (selectedFile) {
-        setStatusMessage("Uploading...")
-        fileId = await handleFileUpload(selectedFile)
-      }
-
-      setStatusMessage("Creating project...")
-
-      createVideoProject(videoTitle, fileId)
-
-      setStatusMessage("Project succesful")
-    } catch(e) {
-      console.log(e)
-      setStatusMessage("Post failed")
+      await createVideoMutation.mutateAsync({
+        title: videoTitle,
+        originalMediaVideoId: videoUpload.id,
+        thumbnailMediaId: thumbnailUpload?.id, // If thumbnail is missing, send null
+      });
+      setUploadState({state: "SUCCESS"});
+    } catch (error) {
+      console.error("Database error:", error);
+      setUploadState({ state: "FAILURE", failure: "Database upload error" });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -155,8 +206,11 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
               >
                 {videoPreview ? (
                   <div className="space-y-2">
-                    <img
+                    <Image
                       src={videoPreview || "/placeholder.svg"}
+                      layout="responsive"
+                      width={0}
+                      height={0}
                       alt="Video preview"
                       className="mx-auto max-h-40 object-contain"
                     />

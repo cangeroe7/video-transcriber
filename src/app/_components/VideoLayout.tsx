@@ -1,4 +1,4 @@
-import { videos } from "~/server/db/schema";
+import type { videos } from "~/server/db/schema";
 import { VideoItem } from "./VideoItem";
 
 export default function VideoLayout(props: {
