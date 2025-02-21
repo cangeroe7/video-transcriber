@@ -65,6 +65,13 @@ export const videoRouter = createTRPCRouter({
         orderBy: (videos, { [orderBy.direction]: order }) => [order(videos[orderBy.field])],
         limit: limit + 1,
         offset,
+        with: {
+          thumbnailMedia: {
+            columns: {
+              url: true
+            }
+          }
+        }
       });
 
       let nextPage: number | undefined;

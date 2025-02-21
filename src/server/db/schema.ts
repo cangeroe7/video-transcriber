@@ -66,7 +66,8 @@ export const videos = createTable("videos", {
 
 export const videosRelations = relations(videos, ({ many, one }) => ({
   foldersToVideos: many(foldersToVideos),
-  media: one(media, { fields: [videos.originalMediaVideoId], references: [media.id]}),
+  videoMedia: one(media, { fields: [videos.originalMediaVideoId], references: [media.id]}),
+  thumbnailMedia: one(media, { fields: [videos.thumbnailMediaId], references: [media.id]}),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
 }));
 

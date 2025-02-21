@@ -8,11 +8,5 @@ export default async function RootLayout({
     redirect("/dashboard");
   }
 
-  return (
-    <>
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
-
-

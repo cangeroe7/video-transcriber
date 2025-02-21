@@ -17,7 +17,8 @@ const config = {
             "localhost",
             "127.0.0.1", 
             "lh3.googleusercontent.com",
-            "avatars.githubusercontent.com"
+            "avatars.githubusercontent.com",
+            "video-transcriber-tom-local.s3.us-east-2.amazonaws.com"
         ],
     },
 };
