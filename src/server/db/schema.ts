@@ -19,13 +19,16 @@ import { type AdapterAccount } from "next-auth/adapters";
 export const createTable = pgTableCreator((name) => `video-transcriber_${name}`);
 
 export const folders = createTable("folder", {
-  id: integer("id")
+  id: varchar("id", { length: 32 })
+    .notNull()
     .primaryKey()
-    .generatedByDefaultAsIdentity(),
+    .$defaultFn(() => crypto.randomUUID().replace(/-/g, "")),
   title: varchar("title", { length: 255 }).notNull().unique(),
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
+  thumbnailMediaId: integer("thumbnail_media_id")
+    .references(() => media.id),
   createdAt: timestamp("created_at", {
     mode: "date",
     withTimezone: true,
@@ -39,10 +42,14 @@ export const folders = createTable("folder", {
 export const foldersRelations = relations(folders, ({ many, one }) => ({
   foldersToVideos: many(foldersToVideos),
   user: one(users, { fields: [folders.userId], references: [users.id] }),
+  thumbnailMedia: one(media, { fields: [folders.thumbnailMediaId], references: [media.id] }),
 }));
 
 export const videos = createTable("videos", {
-  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  id: varchar("id", { length: 32 })
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID().replace(/-/g, "")),
   title: varchar("title", { length: 255 }).notNull(),
   userId: varchar("user_id", { length: 255 })
     .notNull()
@@ -74,10 +81,10 @@ export const videosRelations = relations(videos, ({ many, one }) => ({
 export const foldersToVideos = createTable(
   "folders_to_videos",
   {
-    folderId: integer("folder_id")
+    folderId: varchar("folder_id", { length: 32 })
       .notNull()
       .references(() => folders.id),
-    videoId: integer("video_id")
+    videoId: varchar("video_id", { length: 32 })
       .notNull()
       .references(() => videos.id),
   },

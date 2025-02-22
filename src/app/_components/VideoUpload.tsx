@@ -1,86 +1,102 @@
-"use client"
+"use client";
 
-import { useState, useRef, type ChangeEvent, type FormEvent } from "react"
-import { Button } from "~/app/_components/ui/button"
-import { Input } from "~/app/_components/ui/input"
-import { Label } from "~/app/_components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select"
-import { X } from "lucide-react"
-import type { folders } from "~/server/db/schema"
-import { api } from "~/trpc/react"
-import Image from 'next/image'
+import { useState, useRef, type ChangeEvent, type FormEvent } from "react";
+import { Button } from "~/app/_components/ui/button";
+import { Input } from "~/app/_components/ui/input";
+import { Label } from "~/app/_components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/app/_components/ui/select";
+import { X } from "lucide-react";
+import type { folders } from "~/server/db/schema";
+import { api } from "~/trpc/react";
+import Image from "next/image";
 
 const computeSHA256 = async (file: File) => {
-  const buffer = await file.arrayBuffer()
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
-  return hashHex
-}
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return hashHex;
+};
 
-export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]}) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [videoPreview, setVideoPreview] = useState<string | null>(null)
-  const [thumbnail, setThumbnail] = useState<File | null>(null)
-  const [videoTitle, setVideoTitle] = useState("")
-  const [selectedFolder, setSelectedFolder] = useState("")
-  const [newFolder, setNewFolder] = useState("")
-  const [fileName, setFileName] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [statusMessage, setStatusMessage] = useState("Upload")
-  const [loading, setLoading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [uploadState, setUploadState] = useState<{state: "FAILURE", failure: string } | {state: "IDLE"} | {state: "FETCHING"} | {state: "UPLOADED", data: {url: string, id: number}} | {state: "SUCCESS"}>({ state: "IDLE" })
+export function VideoUpload(props: {
+  folders: (typeof folders.$inferSelect)[];
+}) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
+  const [videoTitle, setVideoTitle] = useState("");
+  const [selectedFolder, setSelectedFolder] = useState("");
+  const [newFolder, setNewFolder] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Upload");
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadState, setUploadState] = useState<
+    | { state: "FAILURE"; failure: string }
+    | { state: "IDLE" }
+    | { state: "FETCHING" }
+    | { state: "UPLOADED"; data: { url: string; id: number } }
+    | { state: "SUCCESS" }
+  >({ state: "IDLE" });
 
   const handleButtonClick = () => {
-    setIsModalOpen(true)
-    document.body.classList.add("overflow-hidden")
-  }
+    setIsModalOpen(true);
+    document.body.classList.add("overflow-hidden");
+  };
 
-  const createVideoMutation =  api.video.createVideo.useMutation()
-  const getSignedURLMutation = api.media.getSignedURL.useMutation()
+  const createVideoMutation = api.video.createVideo.useMutation();
+  const getSignedURLMutation = api.media.getSignedURL.useMutation();
 
   const handleCloseModal = () => {
-    setStatusMessage("Upload")
-    setLoading(false)
-    setIsModalOpen(false)
-    resetForm()
-    document.body.classList.remove("overflow-hidden")
-  }
+    setStatusMessage("Upload");
+    setLoading(false);
+    setIsModalOpen(false);
+    resetForm();
+    document.body.classList.remove("overflow-hidden");
+  };
 
   const resetForm = () => {
-    setVideoPreview(null)
+    setVideoPreview(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-  }
+    e.preventDefault();
+  };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    const file = e.dataTransfer.files[0]
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      handleFileSelect(file)
+      handleFileSelect(file);
     }
-  }
+  };
 
   const handleFileSelect = (file: File) => {
-    setFileName(file.name)
-    setSelectedFile(file)
-    const video = document.createElement("video")
-    video.preload = "metadata"
+    setFileName(file.name);
+    setSelectedFile(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
     video.onloadeddata = () => {
-      video.currentTime = 1 // Set to 1 second to avoid potential blank frames at the start
+      video.currentTime = 1; // Set to 1 second to avoid potential blank frames at the start
       video.onseeked = () => {
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
@@ -93,63 +109,66 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
               const blobUrl = URL.createObjectURL(blob);
               setVideoPreview(blobUrl);
 
-              const file = new File([blob], fileName, { type: 'image/jpeg' });
+              const file = new File([blob], fileName, { type: "image/jpeg" });
               setThumbnail(file);
               console.log("Hello World");
             }
-          }, 'image/png');
+          }, "image/png");
         }
-      }
-    }
-    video.src = URL.createObjectURL(file)
-  }
+      };
+    };
+    video.src = URL.createObjectURL(file);
+  };
 
   const handleRemoveVideo = () => {
-    resetForm()
-  }
+    resetForm();
+  };
 
-  const handleFileUpload = async (file: File): Promise<{ url: string; id: number } | undefined> => {
+  const handleFileUpload = async (
+    file: File,
+  ): Promise<{ url: string; id: number } | undefined> => {
+    const checksum = await computeSHA256(file);
 
-    const checksum = await computeSHA256(file)
-
-    let signedURLResult: Awaited<ReturnType<typeof getSignedURLMutation.mutateAsync>> | null = null
+    let signedURLResult: Awaited<
+      ReturnType<typeof getSignedURLMutation.mutateAsync>
+    > | null = null;
     try {
       signedURLResult = await getSignedURLMutation.mutateAsync({
         fileType: file.type,
         fileSize: file.size,
         checksum,
-      })
-    } catch(error) {
-      setUploadState({state: "FAILURE", failure: "Upload Error"})
-      console.error(error, uploadState)
+      });
+    } catch (error) {
+      setUploadState({ state: "FAILURE", failure: "Upload Error" });
+      console.error(error, uploadState);
       return;
     }
 
     if (signedURLResult.failure !== undefined) {
-      setUploadState({state: "FAILURE", failure: signedURLResult.failure})
-      console.error(uploadState, signedURLResult.failure)
-      return 
-    } 
+      setUploadState({ state: "FAILURE", failure: signedURLResult.failure });
+      console.error(uploadState, signedURLResult.failure);
+      return;
+    }
 
-    const { url } = signedURLResult.success
+    const { url } = signedURLResult.success;
 
     try {
       await fetch(url, {
         method: "PUT",
         headers: {
-          "Content-Type": file.type
+          "Content-Type": file.type,
         },
         body: file,
-      })
-    } catch(error) {
+      });
+    } catch (error) {
       console.error(error);
-      setUploadState({state: "FAILURE", failure: "Upload Error"});
+      setUploadState({ state: "FAILURE", failure: "Upload Error" });
       return;
     }
 
-    setUploadState({state: "UPLOADED", data: signedURLResult.success});
+    setUploadState({ state: "UPLOADED", data: signedURLResult.success });
     return signedURLResult.success;
-  }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,7 +182,7 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
       thumbnail ? handleFileUpload(thumbnail) : Promise.resolve(null),
     ]);
 
-    const [ videoUpload,thumbnailUpload] = uploadResults;
+    const [videoUpload, thumbnailUpload] = uploadResults;
 
     if (!videoUpload) {
       setUploadState({ state: "FAILURE", failure: "Video upload failed" });
@@ -176,22 +195,22 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
         originalMediaVideoId: videoUpload.id,
         thumbnailMediaId: thumbnailUpload?.id, // If thumbnail is missing, send null
       });
-      setUploadState({state: "SUCCESS"});
+      setUploadState({ state: "SUCCESS" });
     } catch (error) {
       console.error("Database error:", error);
       setUploadState({ state: "FAILURE", failure: "Database upload error" });
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
     <div>
       <Button onClick={handleButtonClick}>Upload Video</Button>
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-hidden flex items-center justify-center transition-opacity duration-300 z-50">
-          <div className="bg-white p-8 rounded-lg w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+          <div className="w-full max-w-md rounded-lg bg-white p-8">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold">Upload Video</h2>
               <Button variant="default" size="icon" onClick={handleCloseModal}>
                 <X className="h-4 w-4" />
@@ -199,7 +218,7 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
             </div>
             <form onSubmit={handleSubmit}>
               <div
-                className="border-2 border-dashed border-gray-300 rounded-lg p-8 mb-4 text-center cursor-pointer relative"
+                className="relative mb-4 cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-8 text-center"
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
@@ -221,8 +240,8 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleRemoveVideo()
+                          e.stopPropagation();
+                          handleRemoveVideo();
                         }}
                       >
                         <X className="h-4 w-4" />
@@ -253,13 +272,22 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
                 </div>
                 <div>
                   <Label htmlFor="folder-select">Select Folder</Label>
-                  <Select value={selectedFolder} onValueChange={setSelectedFolder} required>
+                  <Select
+                    value={selectedFolder}
+                    onValueChange={setSelectedFolder}
+                    required
+                  >
                     <SelectTrigger id="folder-select">
                       <SelectValue placeholder="Select a folder" />
                     </SelectTrigger>
                     <SelectContent>
                       {props.folders.map((folder) => (
-                        <SelectItem key={folder.id} value={folder.id.toString()}>{folder.title}</SelectItem>
+                        <SelectItem
+                          key={folder.id}
+                          value={folder.id.toString()}
+                        >
+                          {folder.title}
+                        </SelectItem>
                       ))}
                       <SelectItem value="new">Add New Folder</SelectItem>
                     </SelectContent>
@@ -286,6 +314,5 @@ export function VideoUpload( props: { folders: (typeof folders.$inferSelect)[]})
         </div>
       )}
     </div>
-  )
+  );
 }
-

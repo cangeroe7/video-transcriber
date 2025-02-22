@@ -1,0 +1,1 @@
+ALTER TABLE "video-transcriber_folder" ALTER COLUMN "id" SET DATA TYPE varchar(32);

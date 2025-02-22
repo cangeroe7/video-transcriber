@@ -2,30 +2,32 @@ import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
 import VideoLayout from "~/app/_components/VideoLayout";
-
-import { getSignedURL } from "../actions";
-
+import type { VideoWithMedia } from "~/types";
 
 interface FolderPageProps {
   params: { folderId: string };
 }
 
 export default async function FolderPage({ params }: FolderPageProps) {
-  const { folderId } = await params;
-
   const session = await auth();
   if (!session?.user) {
     redirect("/");
   }
 
-  console.log(folderId);
+  const { folderId } = params;
 
-  const { items: videoItems } = await api.video.getUserVideos({
-    limit: 10,
-    orderBy: { field: "updatedAt", direction: "desc" },
+  const videosItems: VideoWithMedia[] = await api.video.getVideosInFolder({
+    folderId,
   });
 
+  console.log(videosItems);
+
   return (
-    <VideoLayout videos={videoItems} />
+    <div className="container mx-auto p-4">
+      <div className="align-center mb-4 flex">
+        <h1 className="text-2xl font-bold">My Folder</h1>
+      </div>
+      <VideoLayout videos={videosItems} />
+    </div>
   );
 }

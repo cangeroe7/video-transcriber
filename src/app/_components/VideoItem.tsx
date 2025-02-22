@@ -10,22 +10,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/app/_components/ui/dropdown-menu";
-import type { VideoWithMedia } from "~/app/dashboard/page";
+import { api } from "~/trpc/react";
+import type { VideoWithMedia } from "~/types";
 
 export function VideoItem({ video }: { video: VideoWithMedia }) {
   const [title, setTitle] = useState(video.title);
 
-  const handleRename = () => {
+  const updateVideoTitleMutiation = api.video.updateVideoTitle.useMutation();
+  const handleRename = async () => {
     const newTitle = prompt("Enter new title:", title);
     if (newTitle) {
       setTitle(newTitle);
+      await updateVideoTitleMutiation.mutateAsync({
+        videoId: video.id,
+        title: newTitle,
+      });
     }
   };
 
   const handleRemove = () => {
     if (confirm("Are you sure you want to remove this video?")) {
-      // In a real application, you would remove the video from the list
-      // and possibly update the backend. For this example, we'll just log.
       console.log(`Removed video: ${title}`);
     }
   };
@@ -54,7 +58,7 @@ export function VideoItem({ video }: { video: VideoWithMedia }) {
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuItem onClick={handleRename}>
               <Edit2 className="mr-2 h-4 w-4" />
               <span>Rename</span>
