@@ -111,7 +111,6 @@ export function VideoUpload(props: {
 
               const file = new File([blob], fileName, { type: "image/jpeg" });
               setThumbnail(file);
-              console.log("Hello World");
             }
           }, "image/png");
         }
@@ -126,7 +125,10 @@ export function VideoUpload(props: {
 
   const handleFileUpload = async (
     file: File,
-  ): Promise<{ url: string; id: number } | undefined> => {
+  ): Promise<
+    | { ok: true; data: { url: string; id: number } }
+    | { ok: false; errorMessage: string }
+  > => {
     const checksum = await computeSHA256(file);
 
     let signedURLResult: Awaited<
@@ -139,15 +141,13 @@ export function VideoUpload(props: {
         checksum,
       });
     } catch (error) {
-      setUploadState({ state: "FAILURE", failure: "Upload Error" });
-      console.error(error, uploadState);
-      return;
+      console.error(error);
+      return { ok: false, errorMessage: "Upload Error" };
     }
 
     if (signedURLResult.failure !== undefined) {
-      setUploadState({ state: "FAILURE", failure: signedURLResult.failure });
-      console.error(uploadState, signedURLResult.failure);
-      return;
+      console.error(signedURLResult.failure);
+      return { ok: false, errorMessage: signedURLResult.failure };
     }
 
     const { url } = signedURLResult.success;
@@ -162,38 +162,51 @@ export function VideoUpload(props: {
       });
     } catch (error) {
       console.error(error);
-      setUploadState({ state: "FAILURE", failure: "Upload Error" });
-      return;
+      return { ok: false, errorMessage: "Upload Error" };
     }
 
-    setUploadState({ state: "UPLOADED", data: signedURLResult.success });
-    return signedURLResult.success;
+    return { ok: true, data: signedURLResult.success };
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!selectedFile) {
+      setUploadState({ state: "FAILURE", failure: "No file selected" });
+      return;
+    }
+
+    if (!thumbnail) {
+      setUploadState({ state: "FAILURE", failure: "No thumbnail selected" });
+      return;
+    }
 
     setLoading(true);
 
     setUploadState({ state: "FETCHING" });
 
     const uploadResults = await Promise.all([
-      selectedFile ? handleFileUpload(selectedFile) : Promise.resolve(null),
-      thumbnail ? handleFileUpload(thumbnail) : Promise.resolve(null),
+      handleFileUpload(selectedFile),
+      handleFileUpload(thumbnail),
     ]);
 
     const [videoUpload, thumbnailUpload] = uploadResults;
 
-    if (!videoUpload) {
+    if (!videoUpload?.ok) {
       setUploadState({ state: "FAILURE", failure: "Video upload failed" });
+      return;
+    }
+
+    if (!thumbnailUpload?.ok) {
+      setUploadState({ state: "FAILURE", failure: "Thumbnail upload failed" });
       return;
     }
 
     try {
       await createVideoMutation.mutateAsync({
         title: videoTitle,
-        originalMediaVideoId: videoUpload.id,
-        thumbnailMediaId: thumbnailUpload?.id, // If thumbnail is missing, send null
+        originalMediaVideoId: videoUpload.data.id,
+        thumbnailMediaId: thumbnailUpload?.data?.id,
       });
       setUploadState({ state: "SUCCESS" });
     } catch (error) {

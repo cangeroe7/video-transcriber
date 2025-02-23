@@ -5,7 +5,7 @@ import VideoLayout from "~/app/_components/VideoLayout";
 import type { VideoWithMedia } from "~/types";
 
 interface FolderPageProps {
-  params: { folderId: string };
+  params: Promise<{ folderId: string }>;
 }
 
 export default async function FolderPage({ params }: FolderPageProps) {
@@ -14,7 +14,7 @@ export default async function FolderPage({ params }: FolderPageProps) {
     redirect("/");
   }
 
-  const { folderId } = params;
+  const { folderId } = await params;
 
   const videosItems: VideoWithMedia[] = await api.video.getVideosInFolder({
     folderId,

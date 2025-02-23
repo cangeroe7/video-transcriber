@@ -48,6 +48,7 @@ export const videoRouter = createTRPCRouter({
         where: eq(folders.id, folderId),
       });
       
+      console.log("folder", folder);
       // TODO: Error handling with trpc errors, or failure/success
       if (!folder) {
         throw new Error("Folder not found");
@@ -73,6 +74,7 @@ export const videoRouter = createTRPCRouter({
       });
 
       const videos = folderVideos.map((relation) => relation.video);
+      console.log("videos", videos);
 
       return videos
     }),
