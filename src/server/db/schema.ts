@@ -40,7 +40,7 @@ export const folders = createTable("folder", {
 });
 
 export const foldersRelations = relations(folders, ({ many, one }) => ({
-  foldersToVideos: many(foldersToVideos),
+  videos: many(videos),
   user: one(users, { fields: [folders.userId], references: [users.id] }),
   thumbnailMedia: one(media, { fields: [folders.thumbnailMediaId], references: [media.id] }),
 }));
@@ -54,6 +54,8 @@ export const videos = createTable("videos", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
+  folderId: varchar("folder_id", { length: 32 })
+    .references(() => folders.id),
   originalMediaVideoId: integer("original_video_media_id")
     .references(() => media.id)
     .notNull(),
@@ -71,31 +73,10 @@ export const videos = createTable("videos", {
   }).default(sql`CURRENT_TIMESTAMP`),
 });
 
-export const videosRelations = relations(videos, ({ many, one }) => ({
-  foldersToVideos: many(foldersToVideos),
+export const videosRelations = relations(videos, ({ one }) => ({
   videoMedia: one(media, { fields: [videos.originalMediaVideoId], references: [media.id]}),
   thumbnailMedia: one(media, { fields: [videos.thumbnailMediaId], references: [media.id]}),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
-}));
-
-export const foldersToVideos = createTable(
-  "folders_to_videos",
-  {
-    folderId: varchar("folder_id", { length: 32 })
-      .notNull()
-      .references(() => folders.id),
-    videoId: varchar("video_id", { length: 32 })
-      .notNull()
-      .references(() => videos.id),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.folderId, table.videoId] }),
-  })
-);
-
-export const foldersToVideosRelations = relations(foldersToVideos, ({ one }) => ({
-  folder: one(folders, { fields: [foldersToVideos.folderId], references: [folders.id] }),
-  video: one(videos, { fields: [foldersToVideos.videoId], references: [videos.id] }),
 }));
 
 export const media = createTable(

@@ -4,19 +4,19 @@ import type { FolderWithMedia } from "~/types";
 
 export function FolderItem({ folder }: { folder: FolderWithMedia }) {
   return (
-    <div className="relative w-64 pt-6">
-      <div className="absolute left-1/2 top-0 z-[0] h-40 w-[90%] -translate-x-1/2 transform rounded-t-lg bg-gray-200" />
-      <div className="absolute left-1/2 top-2 z-[1] h-40 w-[95%] -translate-x-1/2 transform rounded-t-lg bg-gray-400" />
+    <div className="group relative w-64 pt-3">
+      {/* Blue stacked file */}
+      <div className="absolute left-1/2 top-0 z-[1] h-40 w-[97%] -translate-x-1/2 transform rounded-t-lg bg-blue-500 transition-all group-hover:top-1" />
 
-      <Card className="relative z-10 overflow-hidden transition-shadow hover:shadow-lg">
+      {/* Red stacked file */}
+      <div className="absolute left-1/2 top-1 z-[2] h-40 w-[99%] -translate-x-1/2 transform rounded-t-lg bg-red-500 transition-all group-hover:top-2" />
+
+      <Card className="relative z-[3] overflow-hidden transition-all hover:shadow-lg group-hover:-translate-y-1">
         <CardContent className="p-0">
           <div className="relative">
             <div className="relative h-36 w-full overflow-hidden">
               <Image
-                src={
-                  folder.thumbnailMedia?.url ??
-                  "/placeholder.svg?height=144&width=256"
-                }
+                src={folder.thumbnailMedia?.url ?? "/placeholder.svg"}
                 alt={folder.title}
                 width={256}
                 height={144}

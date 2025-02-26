@@ -1,14 +1,10 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "~/server/api/trpc";
-import { folders, foldersToVideos } from "~/server/db/schema";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { folders, videos } from "~/server/db/schema";
 
 export const folderRouter = createTRPCRouter({
-
   createFolder: protectedProcedure
     .input(z.object({ title: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -38,57 +34,69 @@ export const folderRouter = createTRPCRouter({
       });
       return folder ?? null;
     }),
-  
+
   getUserFolders: protectedProcedure
     .input(
       z.object({
         cursor: z.number().min(0).default(0),
-        orderBy: z.object({
-          field: z.enum(['updatedAt', 'title']),
-          direction: z.enum(['asc', 'desc']).default('desc'),
-        }).default({ field: 'updatedAt', direction: 'desc' }),
-      })
+        orderBy: z
+          .object({
+            field: z.enum(["updatedAt", "title"]),
+            direction: z.enum(["asc", "desc"]).default("desc"),
+          })
+          .default({ field: "updatedAt", direction: "desc" }),
+      }),
     )
-    .query(async ({ ctx, input}) => {
+    .query(async ({ ctx, input }) => {
       const { orderBy } = input;
-      
+
       const userId = ctx.session.user.id;
 
       const user_folders = await ctx.db.query.folders.findMany({
         where: eq(folders.userId, userId),
-        orderBy: (folders, { [orderBy.direction]: order }) => [order(folders[orderBy.field])],
+        orderBy: (folders, { [orderBy.direction]: order }) => [
+          order(folders[orderBy.field]),
+        ],
         with: {
           thumbnailMedia: {
             columns: {
-              url: true
-            }
-          }
-        } 
+              url: true,
+            },
+          },
+        },
       });
-      
+
       return {
         folders: user_folders,
-      }
+      };
     }),
 
   addVideosToFolder: protectedProcedure
-    .input(z.object({ 
-      folderId: z.string(), 
-      videoIds: z.array(z.string()) }))
+    .input(
+      z.object({
+        folderId: z.string(),
+        videoIds: z.array(z.string()),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { folderId, videoIds } = input;
 
-      await ctx.db.insert(foldersToVideos).values(
-        videoIds.map((videoId) => ({
-          folderId,
-          videoId,
-        }))
-      )
+      await ctx.db
+        .update(videos)
+        .set({ folderId })
+        .where(inArray(videos.id, videoIds));
     }),
 
-  removeVideoFromFolder: protectedProcedure
-    .input(z.object({ folderId: z.string(), videoId: z.string() }))
+  removeVideosFromFolder: protectedProcedure
+    .input(z.object({ folderId: z.string(), videoIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.delete(foldersToVideos).where(eq(foldersToVideos.folderId, input.folderId));
+      const { folderId, videoIds } = input;
+
+      await ctx.db
+        .update(videos)
+        .set({ folderId: null })
+        .where(
+          and(eq(videos.folderId, folderId), inArray(videos.id, videoIds)),
+        );
     }),
-}); 
+});
