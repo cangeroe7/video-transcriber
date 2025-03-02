@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useRef, type ChangeEvent, type FormEvent } from "react";
-import { Button } from "~/app/_components/ui/button";
-import { Input } from "~/app/_components/ui/input";
-import { Label } from "~/app/_components/ui/label";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "~/app/_components/ui/select";
+} from "~/components/ui/select";
 import { X } from "lucide-react";
 import type { folders } from "~/server/db/schema";
 import { api } from "~/trpc/react";

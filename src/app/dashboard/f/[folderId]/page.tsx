@@ -1,7 +1,7 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import VideoLayout from "~/app/_components/VideoLayout";
+import VideoLayout from "~/components/VideoLayout";
 import type { VideoWithMedia } from "~/types";
 
 interface FolderPageProps {

@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { UserCircle, User, LogOut } from "lucide-react";
 import type { User as NextAuthUser } from "next-auth";
-import { Button } from "~/app/_components/ui/button";
-import { Card } from "~/app/_components/ui/card";
-import { Separator } from "~/app/_components/ui/separator";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 

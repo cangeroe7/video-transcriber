@@ -1,8 +1,8 @@
 import { auth } from "~/server/auth";
 import { redirect } from "next/navigation";
 import { api } from "~/trpc/server";
-import { FolderLayout } from "~/app/_components/FolderLayout";
-import CreateFolder from "~/app/_components/CreateFolder";
+import { FolderLayout } from "~/components/FolderLayout";
+import CreateFolder from "~/components/CreateFolder";
 import type { FolderWithMedia } from "~/types";
 
 export default async function FolderPage() {

@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { ChevronRight, Check } from "lucide-react";
-import { Button } from "~/app/_components/ui/button";
-import { Input } from "~/app/_components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "~/app/_components/ui/dialog";
+} from "~/components/ui/dialog";
 import type { VideoWithMedia } from "~/types";
 
 import Image from "next/image";

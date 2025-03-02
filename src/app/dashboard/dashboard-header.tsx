@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { LayoutDashboard } from "lucide-react";
-import ProfileButton from "~/app/_components/ProfileButton";
+import ProfileButton from "~/components/ProfileButton";
 import { auth } from "~/server/auth";
-import { Button } from "../_components/ui/button";
+import { Button } from "../../components/ui/button";
 
 export async function DashboardHeader() {
   const session = await auth();
