@@ -137,6 +137,7 @@ export function VideoUpload(props: {
     try {
       signedURLResult = await getSignedURLMutation.mutateAsync({
         fileType: file.type,
+        folder: "original_videos",
         fileSize: file.size,
         checksum,
       });
@@ -187,26 +188,26 @@ export function VideoUpload(props: {
 
     const uploadResults = await Promise.all([
       handleFileUpload(selectedFile),
-      handleFileUpload(thumbnail),
+      //handleFileUpload(thumbnail),
     ]);
 
-    const [videoUpload, thumbnailUpload] = uploadResults;
+    const [videoUpload /* , thumbnailUpload */] = uploadResults;
 
     if (!videoUpload?.ok) {
       setUploadState({ state: "FAILURE", failure: "Video upload failed" });
       return;
     }
 
-    if (!thumbnailUpload?.ok) {
-      setUploadState({ state: "FAILURE", failure: "Thumbnail upload failed" });
-      return;
-    }
+    // if (!thumbnailUpload?.ok) {
+    //   setUploadState({ state: "FAILURE", failure: "Thumbnail upload failed" });
+    //   return;
+    // }
 
     try {
       await createVideoMutation.mutateAsync({
         title: videoTitle,
         originalMediaVideoId: videoUpload.data.id,
-        thumbnailMediaId: thumbnailUpload?.data?.id,
+        // thumbnailMediaId: thumbnailUpload?.data?.id,
       });
       setUploadState({ state: "SUCCESS" });
     } catch (error) {

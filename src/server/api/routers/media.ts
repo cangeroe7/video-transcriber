@@ -52,12 +52,13 @@ export const mediaRouter = createTRPCRouter({
     .input(
       z.object({
         fileType: z.string(),
+        folder: z.enum(["original_videos", "thumbnails"]),
         fileSize: z.number(),
         checksum: z.string(),
       })
     )
     .mutation(async ({ ctx, input }): Promise<SignedURLResponse> => {
-      const { fileType, fileSize, checksum } = input;
+      const { fileType, folder, fileSize, checksum } = input;
 
       const userId = ctx.session.user?.id;
       if (!userId) {
@@ -76,7 +77,7 @@ export const mediaRouter = createTRPCRouter({
 
       const putObjectCommand = new PutObjectCommand({
         Bucket: env.AWS_BUCKET_NAME,
-        Key: fileName,
+        Key: `${folder}/${fileName}`,
         ContentType: fileType,
         ContentLength: fileSize,
         ChecksumSHA256: checksum,
