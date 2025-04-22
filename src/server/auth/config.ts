@@ -1,7 +1,7 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import type { DefaultSession, NextAuthConfig } from "next-auth";
 import { env } from "~/env";
 import { db } from "~/server/db";
 import {
@@ -71,5 +71,14 @@ export const authConfig = {
         id: user.id,
       },
     }),
+    async signIn({ user }) {
+      const allowedEmails = ["cangeroe7@gmail.com"]; // set this in your .env
+
+      if (!user?.email || !allowedEmails.includes(user.email)) {
+        return false; // Reject sign in
+      }
+
+      return true; // Allow sign in
+    },
   },
 } satisfies NextAuthConfig;
