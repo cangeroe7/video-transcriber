@@ -3,7 +3,7 @@
 import { api } from "~/trpc/server"
 
 
-export const getSignedURL = async (fileType: string, fileSize: number, checksum: string) => {
+export const getSignedURL = async (folder: string, fileSize: number, checksum: string) => {
   const signedURLResult = await api.media.getSignedURL({
     fileType,
     fileSize,
