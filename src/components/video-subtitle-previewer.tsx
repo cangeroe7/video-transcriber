@@ -21,7 +21,7 @@ import {
     PopoverTrigger,
 } from "~/components/ui/popover";
 
-import { VideoByIdOutput } from "~/types";
+import type { RouterOutputs } from "~/trpc/react";
 
 // Font options
 const fontOptions = [
@@ -67,8 +67,7 @@ type TranscriptEntry = {
     end: number;
     text: string;
 }
-
-export function VideoSubtitlePreviewer({ video }: { video: VideoByIdOutput }) {
+export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"]["getVideoById"] }) {
     if (!video) {
         return <div>NO VIDEO DUMMY</div>
     }
