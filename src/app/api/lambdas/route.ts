@@ -1,4 +1,3 @@
-// app/api/transcription-done/route.ts
 import { db } from "~/server/db";
 import { videos } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
