@@ -1,12 +1,12 @@
 import { relations, sql } from "drizzle-orm";
 import {
-    index,
-    integer,
-    pgTableCreator,
-    primaryKey,
-    text,
-    timestamp,
-    varchar,
+  index,
+  integer,
+  pgTableCreator,
+  primaryKey,
+  text,
+  timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { type AdapterAccount } from "next-auth/adapters";
 
@@ -16,7 +16,9 @@ import { type AdapterAccount } from "next-auth/adapters";
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const createTable = pgTableCreator((name) => `video-transcriber_${name}`);
+export const createTable = pgTableCreator(
+  (name) => `video-transcriber_${name}`,
+);
 
 export const folders = createTable("folder", {
   id: varchar("id", { length: 32 })
@@ -27,8 +29,7 @@ export const folders = createTable("folder", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
-  thumbnailMediaId: integer("thumbnail_media_id")
-    .references(() => media.id),
+  thumbnailMediaId: integer("thumbnail_media_id").references(() => media.id),
   createdAt: timestamp("created_at", {
     mode: "date",
     withTimezone: true,
@@ -42,7 +43,10 @@ export const folders = createTable("folder", {
 export const foldersRelations = relations(folders, ({ many, one }) => ({
   videos: many(videos),
   user: one(users, { fields: [folders.userId], references: [users.id] }),
-  thumbnailMedia: one(media, { fields: [folders.thumbnailMediaId], references: [media.id] }),
+  thumbnailMedia: one(media, {
+    fields: [folders.thumbnailMediaId],
+    references: [media.id],
+  }),
 }));
 
 export const videos = createTable("videos", {
@@ -54,13 +58,11 @@ export const videos = createTable("videos", {
   userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id),
-  folderId: varchar("folder_id", { length: 32 })
-    .references(() => folders.id),
+  folderId: varchar("folder_id", { length: 32 }).references(() => folders.id),
   originalMediaVideoId: integer("original_video_media_id")
     .references(() => media.id)
     .notNull(),
-  thumbnailMediaId: integer("thumbnail_media_id")
-    .references(() => media.id),
+  thumbnailMediaId: integer("thumbnail_media_id").references(() => media.id),
   subtitlesUrl: varchar("subtitles_url", { length: 255 }),
   processedVideoUrl: varchar("processed_video_url", { length: 255 }),
   createdAt: timestamp("created_at", {
@@ -74,28 +76,39 @@ export const videos = createTable("videos", {
 });
 
 export const videosRelations = relations(videos, ({ one }) => ({
-  videoMedia: one(media, { fields: [videos.originalMediaVideoId], references: [media.id]}),
-  thumbnailMedia: one(media, { fields: [videos.thumbnailMediaId], references: [media.id]}),
-  folder: one(folders, { fields: [videos.folderId], references: [folders.id]}),
+  videoMedia: one(media, {
+    fields: [videos.originalMediaVideoId],
+    references: [media.id],
+  }),
+  thumbnailMedia: one(media, {
+    fields: [videos.thumbnailMediaId],
+    references: [media.id],
+  }),
+  folder: one(folders, { fields: [videos.folderId], references: [folders.id] }),
   user: one(users, { fields: [videos.userId], references: [users.id] }),
 }));
 
-export const media = createTable(
-  "media",
-  {
-    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    url: varchar("url").notNull(),
-    userId: varchar("user_id", { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    createdAt: timestamp("created_at", { withTimezone: true}).default(sql`CURRENT_TIMESTAMP`)
-  }
-)
+export const media = createTable("media", {
+  id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+  url: varchar("url").notNull(),
+  userId: varchar("user_id", { length: 255 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).default(
+    sql`CURRENT_TIMESTAMP`,
+  ),
+});
 
 export const mediaRelations = relations(media, ({ one }) => ({
   user: one(users, { fields: [media.userId], references: [users.id] }),
-  videoWithOriginalMedia: one(videos, { fields: [media.id], references: [videos.originalMediaVideoId] }),
-  videoWithThumbnailMedia: one(videos, { fields: [media.id], references: [videos.thumbnailMediaId] }),
+  videoWithOriginalMedia: one(videos, {
+    fields: [media.id],
+    references: [videos.originalMediaVideoId],
+  }),
+  videoWithThumbnailMedia: one(videos, {
+    fields: [media.id],
+    references: [videos.thumbnailMediaId],
+  }),
 }));
 
 // REQUIRED TABLES FOR NEXT AUTH
@@ -112,8 +125,7 @@ export const users = createTable("user", {
     withTimezone: true,
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar("image", { length: 255 }),
-  },
-);
+});
 
 export const usersRelations = relations(users, ({ many }) => ({
   media: many(media),
@@ -147,7 +159,7 @@ export const accounts = createTable(
       columns: [account.provider, account.providerAccountId],
     }),
     userIdIdx: index("account_user_id_idx").on(account.userId),
-  })
+  }),
 );
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
@@ -170,7 +182,7 @@ export const sessions = createTable(
   },
   (session) => ({
     userIdIdx: index("session_user_id_idx").on(session.userId),
-  })
+  }),
 );
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -189,5 +201,5 @@ export const verificationTokens = createTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );

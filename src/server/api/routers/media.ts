@@ -5,37 +5,49 @@ import { eq } from "drizzle-orm";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env } from "~/env";
 
-import crypto from "crypto"
+import crypto from "crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-type SignedURLResponse = 
+type SignedURLResponse =
   | { failure?: undefined; success: { url: string; id: number } }
-  | { failure: string; success?: undefined }
+  | { failure: string; success?: undefined };
 
-const generateFileName = (bytes = 32) => crypto.randomBytes(bytes).toString("hex")
+const generateFileName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
 
 const maxFileSize = 1024 * 1024 * 20; // 20 MB
-const acceptedTypes = ["video/mp4", "video/mov", "image/jpg", "image/jpeg", "image/png"];
+const acceptedTypes = [
+  "video/mp4",
+  "video/mov",
+  "image/jpg",
+  "image/jpeg",
+  "image/png",
+];
 
 const s3Client = new S3Client({
   region: env.AWS_BUCKET_REGION,
   credentials: {
     accessKeyId: env.AWS_ACCESS_KEY,
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-  }
-})
+  },
+});
 
 export const mediaRouter = createTRPCRouter({
   createMedia: protectedProcedure
-    .input(z.object({
-      url: z.string().url(),
-    }))
+    .input(
+      z.object({
+        url: z.string().url(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { url } = input;
-      await ctx.db.insert(media).values({
-        url,
-        userId: ctx.session.user.id,
-      }).returning();
+      await ctx.db
+        .insert(media)
+        .values({
+          url,
+          userId: ctx.session.user.id,
+        })
+        .returning();
     }),
 
   deleteMedia: protectedProcedure
@@ -55,7 +67,7 @@ export const mediaRouter = createTRPCRouter({
         folder: z.enum(["original_videos", "thumbnails"]),
         fileSize: z.number(),
         checksum: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }): Promise<SignedURLResponse> => {
       const { fileType, folder, fileSize, checksum } = input;
@@ -73,7 +85,7 @@ export const mediaRouter = createTRPCRouter({
         return { failure: "File too large" };
       }
 
-      const fileName = generateFileName()
+      const fileName = generateFileName();
 
       const putObjectCommand = new PutObjectCommand({
         Bucket: env.AWS_BUCKET_NAME,
@@ -86,17 +98,18 @@ export const mediaRouter = createTRPCRouter({
         },
       });
 
-      const signedURL = await getSignedUrl(
-        s3Client, 
-        putObjectCommand,
-        { expiresIn: 60 }
-      )
+      const signedURL = await getSignedUrl(s3Client, putObjectCommand, {
+        expiresIn: 60,
+      });
 
-      const mediaResult = await ctx.db.insert(media).values({
-        url: signedURL.split("?")[0]!,
-        userId,
-      }).returning();
+      const mediaResult = await ctx.db
+        .insert(media)
+        .values({
+          url: signedURL.split("?")[0]!,
+          userId,
+        })
+        .returning();
 
       return { success: { url: signedURL, id: mediaResult[0]!.id } };
     }),
-})
+});
