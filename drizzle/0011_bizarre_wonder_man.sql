@@ -1,0 +1,1 @@
+DROP TABLE "video-transcriber_folders_to_videos";

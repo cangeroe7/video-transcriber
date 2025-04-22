@@ -2,52 +2,47 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 export const env = createEnv({
-    /**
-     * Specify your server-side environment variables schema here. This way you can ensure the app
-     * isn't built with invalid env vars.
-     */
-    server: {
-        AUTH_SECRET:
-            process.env.NODE_ENV === "production"
-                ? z.string()
-                : z.string().optional(),
-        AUTH_GITHUB_ID: z.string(),
-        AUTH_GITHUB_SECRET: z.string(),
-        AUTH_GOOGLE_ID: z.string(),
-        AUTH_GOOGLE_SECRET: z.string(),
-        DATABASE_URL: z.string().url(),
-        NODE_ENV: z
-            .enum(["development", "test", "production"])
-            .default("development"),
-        DATABASE_URL_UNPOOLED: z.string().url(),
-        PGHOST: z.string(),
-        PGHOST_UNPOOLED: z.string(),
-        PGUSER: z.string(),
-        PGDATABASE: z.string(),
-        PGPASSWORD: z.string(),
-        POSTGRES_URL: z.string().url(),
-        POSTGRES_URL_NON_POOLING: z.string().url(),
-        POSTGRES_USER: z.string(),
-        POSTGRES_HOST: z.string(),
-        POSTGRES_PASSWORD: z.string(),
-        POSTGRES_DATABASE: z.string(),
-        POSTGRES_URL_NO_SSL: z.string().url(),
-        POSTGRES_PRISMA_URL: z.string().url(),
-        AWS_BUCKET_NAME: z.string(),
-        AWS_BUCKET_REGION: z.string(),
-        AWS_ACCESS_KEY_ID: z.string(),
-        AWS_SECRET_ACCESS_KEY: z.string(),
-        LAMBDA_SECRET: z.string(),
-    },
+  /**
+   * Specify your server-side environment variables schema here. This way you can ensure the app
+   * isn't built with invalid env vars.
+   */
+  server: {
+    AUTH_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    AUTH_GITHUB_ID: z.string(),
+    AUTH_GITHUB_SECRET: z.string(),
+    AUTH_GOOGLE_ID: z.string(),
+    AUTH_GOOGLE_SECRET: z.string(),
+    DATABASE_URL: z.string().url(),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+    DATABASE_URL_UNPOOLED: z.string().url(),
+    PGHOST: z.string(),
+    PGHOST_UNPOOLED: z.string(),
+    PGUSER: z.string(),
+    PGDATABASE: z.string(),
+    PGPASSWORD: z.string(),
+    POSTGRES_URL: z.string().url(),
+    POSTGRES_URL_NON_POOLING: z.string().url(),
+    POSTGRES_USER: z.string(),
+    POSTGRES_HOST: z.string(),
+    POSTGRES_PASSWORD: z.string(),
+    POSTGRES_DATABASE: z.string(),
+    POSTGRES_URL_NO_SSL: z.string().url(),
+    POSTGRES_PRISMA_URL: z.string().url(),
+  },
 
-    /**
-     * Specify your client-side environment variables schema here. This way you can ensure the app
-     * isn't built with invalid env vars. To expose them to the client, prefix them with
-     * `NEXT_PUBLIC_`.
-     */
-    client: {
-        // NEXT_PUBLIC_CLIENTVAR: z.string(),
-    },
+  /**
+   * Specify your client-side environment variables schema here. This way you can ensure the app
+   * isn't built with invalid env vars. To expose them to the client, prefix them with
+   * `NEXT_PUBLIC_`.
+   */
+  client: {
+    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+  },
 
     /**
      * You can't destruct `process.env` as a regular object in the Next.js edge runtimes (e.g.

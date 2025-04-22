@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { SessionProvider } from "next-auth/react";
+import { DashboardHeader } from "./dashboard/dashboard-header";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -15,14 +16,12 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <SessionProvider>
-          <TRPCReactProvider>
-            {children}
-          </TRPCReactProvider>
+          <DashboardHeader />
+          <TRPCReactProvider>{children}</TRPCReactProvider>
         </SessionProvider>
       </body>
     </html>
