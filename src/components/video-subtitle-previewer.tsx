@@ -22,6 +22,7 @@ import {
 } from "~/components/ui/popover";
 
 import type { RouterOutputs } from "~/trpc/react";
+import { api } from "~/trpc/react";
 
 // Font options
 const fontOptions = [
@@ -51,7 +52,6 @@ const languageOptions = [
     { value: "ru", label: "Russian" },
 ];
 
-
 function hexToRgba(hex: string, opacity: number): string {
     const sanitizedHex = hex.replace("#", "");
     const bigint = parseInt(sanitizedHex, 16);
@@ -66,27 +66,41 @@ type TranscriptEntry = {
     start: number;
     end: number;
     text: string;
-}
-export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"]["getVideoById"] }) {
+};
+
+export function VideoSubtitlePreviewer({
+    video,
+}: {
+    video: RouterOutputs["video"]["getVideoById"];
+}) {
     if (!video) {
-        return <div>NO VIDEO DUMMY</div>
+        return <div>NO VIDEO DUMMY</div>;
     }
+
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const [currentTime, setCurrentTime] = useState(0);
     const [currentSubtitle, setCurrentSubtitle] = useState("");
     const [transcript, setTranscript] = useState<TranscriptEntry[]>([]);
+    const [videoData, setVideoData] = useState(video); // store updated video
 
     useEffect(() => {
-        if (!video.subtitlesUrl) return;
+        if (!videoData || !videoData.subtitlesUrl) return;
 
-        fetch(video.subtitlesUrl)
-            .then(res => res.json())
-            .then(data => {
+        const fetchSubtitles = async () => {
+            try {
+                const res = await fetch(videoData.subtitlesUrl!);
+                if (!res.ok) throw new Error("Subtitles not ready");
+                const data = await res.json();
                 setTranscript(data.content);
-                console.log(data.content ?? []);
-            })
-            .catch(err => console.error("Failed to load subtitles", err));
-    }, [video.subtitlesUrl]);
+            } catch (err) {
+                console.error("Failed to fetch transcript", err);
+            }
+        };
+
+        fetchSubtitles();
+    }, [videoData.subtitlesUrl]);
+
 
     interface Settings {
         language: string;
@@ -126,6 +140,40 @@ export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"
         }));
     };
 
+    const { data, isLoading } = api.video.getTranscriptStatus.useQuery(
+        {
+            videoId: video.id
+
+        },
+        {
+            refetchInterval: (data) => {
+                return data.state.data?.ready ? false : 5000
+            }
+        })
+
+    useEffect(() => {
+        if (data?.ready && data.video) {
+            setVideoData(data.video);
+        }
+    }, [data?.ready, data?.video]);
+
+    useEffect(() => {
+        if (!videoData || !videoData.subtitlesUrl) return;
+
+        const fetchSubtitles = async () => {
+            try {
+                const res = await fetch(videoData.subtitlesUrl!);
+                if (!res.ok) throw new Error("Subtitles not ready");
+                const data = await res.json();
+                setTranscript(data.content);
+            } catch (err) {
+                console.error("Failed to fetch transcript", err);
+            }
+        };
+
+        fetchSubtitles();
+    }, [videoData.subtitlesUrl]);
+
     // Simulate video playback and update current subtitle
     useEffect(() => {
         const interval = setInterval(() => {
@@ -147,6 +195,14 @@ export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"
 
     return (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {isLoading ? (
+                <p className="text-muted-foreground animate-pulse">Transcription is being generated...</p>
+            ) : (
+                <Button variant="outline" onClick={() => console.log(transcript)}>
+                    View Transcript
+
+                </Button>
+            )}
             {/* Video Preview Section */}
             <div className="lg:col-span-2">
                 <div className="relative overflow-hidden rounded-lg bg-black">
@@ -161,36 +217,41 @@ export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"
                     />
 
                     {/* Subtitle overlay */}
-                    <div
-                        className="absolute w-full px-4"
-                        style={{
-                            top: `${settings.position}%`,
-                            transform: "translateY(-50%)",
-                            textAlign: `${settings.alignment}`,
-                        }}
-                    >
+                    {currentSubtitle && (
                         <div
-                            className="inline-block rounded px-3 py-1"
+                            className="absolute w-full px-4"
                             style={{
-                                backgroundColor: hexToRgba(settings.backgroundColor, settings.backgroundOpacity / 100),
-                                maxWidth: "100%",
+                                top: `${settings.position}%`,
+                                transform: "translateY(-50%)",
+                                textAlign: `${settings.alignment}`,
                             }}
                         >
-                            <p
+                            <div
+                                className="inline-block rounded px-3 py-1"
                                 style={{
-                                    color: settings.textColor,
-                                    fontSize: `${settings.fontSize}px`,
-                                    fontFamily: settings.fontFamily,
-                                    fontWeight: settings.fontWeight,
-                                    textShadow: settings.textShadow
-                                        ? `${settings.outlineWidth}px ${settings.outlineWidth}px ${settings.outlineWidth}px ${settings.outlineColor}`
-                                        : "none",
+                                    backgroundColor: hexToRgba(
+                                        settings.backgroundColor,
+                                        settings.backgroundOpacity / 100,
+                                    ),
+                                    maxWidth: "100%",
                                 }}
                             >
-                                {currentSubtitle || "Subtitle preview will appear here"}
-                            </p>
+                                <p
+                                    style={{
+                                        color: settings.textColor,
+                                        fontSize: `${settings.fontSize}px`,
+                                        fontFamily: settings.fontFamily,
+                                        fontWeight: settings.fontWeight,
+                                        textShadow: settings.textShadow
+                                            ? `${settings.outlineWidth}px ${settings.outlineWidth}px ${settings.outlineWidth}px ${settings.outlineColor}`
+                                            : "none",
+                                    }}
+                                >
+                                    {currentSubtitle || ""}
+                                </p>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
@@ -353,10 +414,7 @@ export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"
                                         step={1}
                                         value={[settings.backgroundOpacity]}
                                         onValueChange={(value) =>
-                                            updateSetting(
-                                                "backgroundOpacity",
-                                                value[0] ?? 50,
-                                            )
+                                            updateSetting("backgroundOpacity", value[0] ?? 50)
                                         }
                                     />
                                 </div>
@@ -382,7 +440,6 @@ export function VideoSubtitlePreviewer({ video }: { video: RouterOutputs["video"
                                         </Popover>
                                     </div>
                                 </div>
-
                             </TabsContent>
 
                             {/* Advanced Settings */}

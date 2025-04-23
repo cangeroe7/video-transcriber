@@ -5,6 +5,20 @@ import { and, eq, count } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 export const videoRouter = createTRPCRouter({
+	getTranscriptStatus: protectedProcedure
+		.input(z.object({ videoId: z.string() }))
+		.query(async ({ ctx, input }) => {
+			const video = await ctx.db.query.videos.findFirst({
+				where: eq(videos.id, input.videoId),
+				with: {
+					videoMedia: true,
+				},
+			});
+
+			return video?.subtitlesUrl
+				? { ready: true, video }
+				: { ready: false };
+		}),
 	createVideo: protectedProcedure
 		.input(
 			z.object({

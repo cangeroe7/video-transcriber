@@ -10,9 +10,11 @@ export const lambdaRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input }) => {
-			const key = input.key;
 			const lambdaApiUrl =
 				"https://apwhyuni65.execute-api.us-east-2.amazonaws.com/Prod/transcribe";
+
+			console.log("Calling Lambda API");
+            console.log(input);
 
 			const response = await fetch(lambdaApiUrl, {
 				method: "POST",
@@ -24,7 +26,10 @@ export const lambdaRouter = createTRPCRouter({
 
 			if (!response.ok) {
 				const errorText = await response.text();
+				console.error(`Lambda error: ${errorText}`);
 				throw new Error(`Lambda error: ${errorText}`);
 			}
+
+            console.log({response});
 		}),
 });
