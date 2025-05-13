@@ -1,42 +1,39 @@
 "use server";
 
-import { VideoSubtitlePreviewer } from "~/components/video-subtitle-previewer";
 import { api } from "~/trpc/server";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
+import { VideoEditor } from "./VideoEditor";
 
 export default async function VideoProjectPage({
-    params,
+	params,
 }: {
-    params: { projectId: string };
+	params: { projectId: string };
 }) {
-    const param = await params
-    const videoId = param.projectId;
-    const video = await api.video.getVideoById({
-        videoId,
-    });
+	const param = await params;
+	const videoId = param.projectId;
+	const video = await api.video.getVideoById({
+		videoId,
+	});
 
-    if (!video) {
-        notFound();
-    }
+	if (!video) {
+		notFound();
+	}
 
-    const key = new URL(video.videoMedia.url).pathname.slice(1); // Remove leading "/"
+	const key = new URL(video.videoMedia.url).pathname.slice(1); // Remove leading "/"
 
-    if (!video.subtitlesUrl) {
-        try {
-            await api.lambda.transcribe({ videoId, key });
-        } catch (error) {
-            console.error(error);
-        }
-    }
+	if (!video.subtitlesUrl) {
+		try {
+			await api.lambda.transcribe({ videoId, key });
+		} catch (error) {
+			console.error(error);
+		}
+	}
 
-    return (
-        <main className="container mx-auto px-4 py-8">
-            <h1 className="mb-6 text-3xl font-bold">Video Subtitle Previewer</h1>
-
-            <Suspense fallback={<div>Loading Video Transcription</div>}>
-                <VideoSubtitlePreviewer video={video ?? null} />
-            </Suspense>
-        </main>
-    );
+	return (
+		<>
+			<main className="fixed inset-0 mt-0 flex flex-col pt-16">
+				<VideoEditor video={video} />
+			</main>
+		</>
+	);
 }
