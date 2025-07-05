@@ -65,6 +65,9 @@ export const videos = createTable("videos", {
   thumbnailMediaId: integer("thumbnail_media_id").references(() => media.id),
   subtitlesUrl: varchar("subtitles_url", { length: 255 }),
   processedVideoUrl: varchar("processed_video_url", { length: 255 }),
+  width: integer("width"),
+  height: integer("height"),
+  duration: integer("duration"),
   createdAt: timestamp("created_at", {
     mode: "date",
     withTimezone: true,

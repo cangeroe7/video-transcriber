@@ -14,8 +14,7 @@ export default async function RootLayout({
   return (
     <div className="grid">
       <DashboardHeader />
-      <DashboardSidePanel />
-      <main className="ml-48 mt-16">{children}</main>
+      <main className="mt-16">{children}</main>
     </div>
   );
 }

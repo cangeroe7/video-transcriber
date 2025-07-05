@@ -1,6 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Roboto:wght@400;600;800&family=Poppins:wght@400;600;800&family=Montserrat:wght@400;600;800&family=Anton&family=Zen+Loop&family=Squada+One&family=Alfa+Slab+One&family=Bangers&family=Bitter&family=Cabin&family=Cinzel&family=Crimson+Pro&family=DM+Serif+Display&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -88,4 +92,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+body {
+  font-family: "Inter", sans-serif;
 }

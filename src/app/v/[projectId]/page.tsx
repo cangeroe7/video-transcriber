@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/server";
 import { notFound } from "next/navigation";
-import { VideoEditor } from "./VideoEditor";
+import { VideoEditor } from "~/app/v/[projectId]/VideoEditor";
 
 export default async function VideoProjectPage({
 	params,
@@ -32,6 +32,7 @@ export default async function VideoProjectPage({
 	return (
 		<>
 			<main className="fixed inset-0 mt-0 flex flex-col pt-16">
+
 				<VideoEditor video={video} />
 			</main>
 		</>

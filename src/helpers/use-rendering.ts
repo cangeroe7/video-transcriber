@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { useCallback, useMemo, useState } from "react";
 import { getProgress, renderVideo } from "../lambda/api";
-import { CompositionProps } from "../../types/constants";
+import { SubVidProps } from "~/types";
 
 export type State =
   | {
@@ -37,7 +37,7 @@ const wait = async (milliSeconds: number) => {
 
 export const useRendering = (
   id: string,
-  inputProps: z.infer<typeof CompositionProps>,
+  inputProps: z.infer<typeof SubVidProps>,
 ) => {
   const [state, setState] = useState<State>({
     status: "init",
@@ -89,7 +89,7 @@ export const useRendering = (
               progress: result.progress,
               renderId: renderId,
             });
-            await wait(50000);
+            await wait(3000);
           }
         }
       }

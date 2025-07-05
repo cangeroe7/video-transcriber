@@ -1,18 +1,25 @@
 import React from "react";
 import { Composition } from "remotion";
-import { MyComposition } from "./MyComposition";
+import { MainVideo, calculateMetaData } from "./MyVideo";
+import { defaultMyVideoProps } from "../types";
+
 
 export const RemotionRoot: React.FC = () => {
-	return (
-		<>
-			<Composition
-				id="Empty"
-				component={MyComposition}
-				durationInFrames={60}
-				fps={30}
-				width={1280}
-				height={720}
-			/>
-		</>
-	);
+    return (
+        <>
+            <Composition
+                id={"MyVideo"}
+                component={MainVideo}
+                durationInFrames={60}
+                fps={30}
+                width={1280}
+                height={720}
+                defaultProps={{
+                    ...defaultMyVideoProps,
+                    setSettings: () => {},
+                }}
+                calculateMetadata={calculateMetaData}
+            />
+        </>
+    );
 };
