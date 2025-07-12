@@ -17,21 +17,25 @@ import { formatDistance, subDays } from "date-fns";
 export function VideoItem({ video }: { video: VideoWithMedia }) {
 	const [title, setTitle] = useState(video.title);
 
-	const updateVideoTitleMutiation = api.video.updateVideoTitle.useMutation();
+	const updateVideoTitleMutation = api.video.updateVideoTitle.useMutation();
+	const deleteVideoMutation = api.video.deleteVideo.useMutation();
+
 	const handleRename = async () => {
 		const newTitle = prompt("Enter new title:", title);
 		if (newTitle) {
 			setTitle(newTitle);
-			await updateVideoTitleMutiation.mutateAsync({
+			await updateVideoTitleMutation.mutateAsync({
 				videoId: video.id,
 				title: newTitle,
 			});
 		}
 	};
 
-	const handleRemove = () => {
+	const handleRemove = async () => {
 		if (confirm("Are you sure you want to remove this video?")) {
-			console.log(`Removed video: ${title}`);
+			await deleteVideoMutation.mutateAsync({
+				videoId: video.id
+			})
 		}
 	};
 
