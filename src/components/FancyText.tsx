@@ -15,7 +15,7 @@ export default function EmptyStateBanner(props: {
 						backgroundRepeat: "no-repeat",
 						opacity: "30%",
 					}}
-					className="absolute inset-0"
+					className="absolute inset-0 z-0"
 				/>
 
 				<div className="relative flex flex-col space-y-6 md:flex-row md:items-center md:justify-between md:space-x-8 md:space-y-0">

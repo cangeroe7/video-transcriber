@@ -20,8 +20,6 @@ export default async function FolderPage({ params }: FolderPageProps) {
     folderId,
   });
 
-  console.log(videosItems);
-
   return (
     <div className="container mx-auto p-4">
       <div className="align-center mb-4 flex">

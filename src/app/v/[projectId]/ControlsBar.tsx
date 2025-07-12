@@ -261,7 +261,6 @@ export default function ControlsBar({
 					const { start, end } = getVisibleWindow();
 					const percent = Math.max(0, Math.min(1, x / rect.width));
 					const time = start + percent * (end - start);
-					console.log("hello");
 					draft = draft.map((s, i) => {
 						if (s.id !== subtitleId) return s;
 						if (handle === "start") {

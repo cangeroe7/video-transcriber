@@ -25,22 +25,32 @@ export const videoRouter = createTRPCRouter({
 				title: z.string().min(1),
 				originalMediaVideoId: z.number(),
 				thumbnailMediaId: z.number().optional(),
-                width: z.number().int().default(1440),
-                height: z.number().int().default(1080),
-                duration: z.number().int().default(10),
+				width: z.number().int().default(1440),
+				height: z.number().int().default(1080),
+				duration: z.number().int().default(10),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const { title, originalMediaVideoId, thumbnailMediaId, width, height, duration } = input;
-			const inserted = await ctx.db.insert(videos).values({
+			const {
 				title,
 				originalMediaVideoId,
 				thumbnailMediaId,
-				userId: ctx.session.user.id,
-                width,
-                height,
-                duration,
-			}).returning({ id: videos.id });
+				width,
+				height,
+				duration,
+			} = input;
+			const inserted = await ctx.db
+				.insert(videos)
+				.values({
+					title,
+					originalMediaVideoId,
+					thumbnailMediaId,
+					userId: ctx.session.user.id,
+					width,
+					height,
+					duration,
+				})
+				.returning({ id: videos.id });
 			return { id: inserted[0]?.id };
 		}),
 
@@ -130,7 +140,6 @@ export const videoRouter = createTRPCRouter({
 				where: eq(folders.id, folderId),
 			});
 
-			console.log("folder", folder);
 			// TODO: Error handling with trpc errors, or failure/success
 			if (!folder) {
 				throw new Error("Folder not found");
@@ -150,8 +159,6 @@ export const videoRouter = createTRPCRouter({
 					},
 				},
 			});
-
-			console.log("videos", videos);
 
 			return videosInFolder;
 		}),

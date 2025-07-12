@@ -142,7 +142,6 @@ export const calculateMetaData: CalculateMetadataFunction<
 	);
 
 	const fps = 30;
-	console.log({ durationInSeconds, width, height });
 
 	return {
 		durationInFrames: Math.ceil(durationInSeconds * 30),

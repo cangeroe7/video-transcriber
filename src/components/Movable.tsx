@@ -70,7 +70,6 @@ export const Movable: React.FC<{
 	const aName = () => {
 		if (targetRef.current) {
 			const result = getVisualScale(targetRef.current);
-			console.log({ result });
 			setScale(result);
 		}
 		if (containerRef.current) {
@@ -81,8 +80,6 @@ export const Movable: React.FC<{
 				bottom: containerRect.bottom,
 				right: containerRect.right,
 			});
-
-			console.log({ containerRect });
 		}
 	};
 	useEffect(() => {
@@ -146,13 +143,6 @@ export const Movable: React.FC<{
 		const right = (rect.right - containerRect.right) / scale;
 		const bottom = (rect.bottom - containerRect.bottom) / scale;
 
-		console.log(
-			"rects",
-			rect.left / scale,
-			rect.top / scale,
-			containerRect.left,
-			containerRect.top,
-		);
 
 		setInitialClick({
 			left: initialLeft,
@@ -536,7 +526,6 @@ export const Movable: React.FC<{
 								const rect =
 									targetRef.current!.getBoundingClientRect();
 
-								console.log({ rect });
 
 								const left =
 									(rect.left - containerRect.left) / scale;
@@ -549,13 +538,6 @@ export const Movable: React.FC<{
 									(containerRect.bottom - rect.bottom) /
 									scale;
 
-								console.log("MouseUP", {
-									rectright: rect.right,
-									left,
-									top,
-									right,
-									bottom,
-								});
 
 								setInitialPosition({
 									left,
@@ -567,16 +549,11 @@ export const Movable: React.FC<{
 						}}
 						onMouseMove={(e) => {
 							if (isResizing && resizeDirection) {
-								console.log({
-									clientX: e.clientX,
-									clientY: e.clientY,
-								});
 								const deltaX =
 									(e.clientX - resizeInitiales.x) / scale;
 								const deltaY =
 									(e.clientY - resizeInitiales.y) / scale;
 
-								console.log({ deltaX, deltaY });
 
 								let newSize = { ...size };
 								let newPosition = { ...finalPosition };

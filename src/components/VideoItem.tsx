@@ -36,7 +36,7 @@ export function VideoItem({ video }: { video: VideoWithMedia }) {
 	};
 
 	return (
-		<div className="cursor-pointer rounded-lg transition active:bg-gray-200 group">
+		<div className="cursor-pointer rounded-lg transition active:bg-gray-200 group z-10">
 			<div className="relative bg-black/10 rounded-md aspect-video w-full overflow-hidden group-hover:bg-black/15">
 				<Image
 					src={

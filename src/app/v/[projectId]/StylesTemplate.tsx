@@ -167,7 +167,6 @@ export const StylesTemplate: React.FC<SubtitleProps> = ({
 						: `opacity-100 scale-110 text-[${textColor}]`,
 				);
 			case "marketer":
-				console.log({ textColor });
 				return cn(
 					baseClasses,
 					`text-3xl bg-gradient-to-r from-pink-400 to-purple-600 bg-clip-text text-transparent`,
@@ -281,19 +280,19 @@ export const StylesTemplate: React.FC<SubtitleProps> = ({
 	const getContainerClasses = () => {
 		switch (style) {
 			case "current":
-				return "bg-white backdrop-blur-sm rounded-2xl px-6 py-4 border-2 border-blue-200 shadow-lg";
+				return "bg-white backdrop-blur-sm rounded-2xl gap-[6px] px-6 py-4 border-2 border-blue-200 shadow-lg";
 			case "recent":
 				return "bg-gray-200 backdrop-blur-sm rounded-xl px-6 py-4 gap-3";
 			case "marketer":
-				return "bg-transparent bg-white rounded-xl px-6 py-4";
+				return "bg-transparent bg-white rounded-xl px-6 py-4 gap-2";
 			case "ali":
-				return "bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-3";
+				return "bg-black/80 backdrop-blur-sm rounded-2xl px-6 py-3 gap-2";
 			case "slay":
-				return "bg-transparent px-4 py-2 gap-4 uppercase";
+				return "bg-transparent px-4 py-2 gap-5 uppercase";
 			case "neon":
-				return "bg-black/80 backdrop-blur-sm rounded-xl px-6 py-4";
+				return "bg-black/80 backdrop-blur-sm rounded-xl px-6 py-4 gap-2";
 			case "popup":
-				return "bg-gray-900/80 backdrop-blur-sm rounded-xl px-6 py-4 gap-2";
+				return "bg-gray-900/80 backdrop-blur-sm rounded-xl px-6 py-4 gap-3";
 			case "outline":
 				return "bg-gray-800/70 backdrop-blur-sm rounded-xl px-6 py-4 gap-3";
 			case "fade-in":
@@ -303,7 +302,7 @@ export const StylesTemplate: React.FC<SubtitleProps> = ({
 			case "typewriter":
 				return "bg-amber-50/90 backdrop-blur-sm rounded-xl px-6 py-4 gap-0 border border-amber-200 font-mono";
 			default:
-				return "px-4 py-2";
+				return "px-4 py-2 gap-2";
 		}
 	};
 

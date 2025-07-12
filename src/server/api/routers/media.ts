@@ -15,7 +15,7 @@ type SignedURLResponse =
 const generateFileName = (bytes = 32) =>
   crypto.randomBytes(bytes).toString("hex");
 
-const maxFileSize = 1024 * 1024 * 20; // 20 MB
+const maxFileSize = 1024 * 1024 * 500; // Mb 
 const acceptedTypes = [
   "video/mp4",
   "video/mov",

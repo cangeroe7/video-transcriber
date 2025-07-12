@@ -113,11 +113,6 @@ export function VideoUpload(props: {
 				height: video.videoHeight,
 				duration: Math.floor(video.duration),
 			});
-			console.log({
-				width: video.width,
-				height: video.height,
-				duration: Math.floor(video.duration),
-			});
 			video.currentTime = 1; // Set to 1 second to avoid potential blank frames at the start
 			video.onseeked = () => {
 				const canvas = document.createElement("canvas");
